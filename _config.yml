@@ -1,15 +1,16 @@
 # SITE CONFIGURATION
-baseurl: "/oddmayo"
+baseurl: ""
 url: "https://oddmayo.github.io"
 
 # THEME-SPECIFIC CONFIGURATION
-title: Camilo MAyorquín Data Science                                    # site's title
+title: Camilo Mayorquín Data Science                                    # site's title
 description: "A website with blog posts and pages"      # used by search engines
 avatar: assets/img/triangle.png                         # Empty for no avatar in navbar
 favicon: assets/favicon.ico                             # Icon displayed in the tab
+color_theme: auto
 
 # Header and footer text
-header_text: Change <code>header_text</code> in <code>_config.yml</code>  # Change Blog header text
+header_text: Wellcome to my blog  # Change Blog header text
 header_feature_image: assets/img/header/triangular.jpeg
 header_feature_image_responsive: true
 footer_text: >
@@ -48,3 +49,10 @@ exclude: [".jekyll-cache", ".jekyll-metadata", ".idea", "vendor/*", "assets/node
 
 # theme: type-on-strap                                  # if using the theme as a jekyll theme gem
 remote_theme: sylhare/Type-on-Strap                     # If using as a remote_theme in github
+
+
+# BLOG CONFIGURATION
+post_navigation: true
+paginate: 10
+paginate_path: "blog/page:num"
+plugins: [jekyll-paginate, jekyll-seo-tag, jekyll-feed]
