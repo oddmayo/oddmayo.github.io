@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Leverage local LLMs for lazy scraping
-tags: [Katex, Mermaid, Markdown]
+tags: [Scraping, LLM]
 categories: Demo
 ---
 
@@ -50,7 +50,8 @@ That's it for now, we can go to our notebook and check if the installation had n
 # crawl4ai health check
 !crawl4ai-doctor
 ```
-~~~~
+
+```         
 [INIT].... → Running Crawl4AI health check... 
 [INIT].... → Crawl4AI 0.7.6 
 [TEST].... ℹ Testing crawling capabilities... 
@@ -62,8 +63,7 @@ That's it for now, we can go to our notebook and check if the installation had n
 [COMPLETE] ● https://crawl4ai.com                                                                    
 | ✓ | ⏱: 3.93s 
 [COMPLETE] ● ✅ Crawling test passed!
-~~~~
-
+```
 
 It's good to check the working status of the library every now and then in case you need to deprecate.
 
@@ -95,7 +95,8 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-~~~~
+
+```         
 # Web Scraping Sandbox
 * * *
 ###  [Countries of the World: A Simple Example](https://www.scrapethissite.com/pages/simple/)
@@ -111,7 +112,7 @@ Click through a bunch of great films. Learn how content is added to the page asy
 Scraping real websites, you're likely run into a number of common gotchas. Get practice with spoofing headers, handling logins & session cookies, finding CSRF tokens, and other common network errors. 
 * * *
 Lessons and Videos © Hartley Brody 2023 
-~~~~
+```
 
 Pretty standard, if you wanted to extract specific elements you could use any of the [LLM-Free Strategies](https://docs.crawl4ai.com/extraction/no-llm-strategies/). But we are going the opposite route.
 
@@ -126,7 +127,6 @@ $ ollama pull qwen2.5:3b
 ```
 
 We can find a simple example of LLM extration in the docs, just make sure to modify the provider, instruction and url:
-
 
 ``` python
 class Product(BaseModel):
@@ -186,169 +186,17 @@ async def main():
 if __name__ == "__main__":
     asyncio.run(main())
 ```
-<div class="code-block-with-scrollbar">
-  class Product(BaseModel):
-    name: str
-    description: str
 
-async def main():
-    # 1. Define the LLM extraction strategy
-    llm_strategy = LLMExtractionStrategy(
-        llm_config = LLMConfig(provider="ollama/qwen2.5:3b", api_token=None),
-        schema=Product.model_json_schema(),
-        extraction_type="schema",
-        instruction=""" 
-        From the crawled content
-        extract the titles and the description in JSON format like this:
-        {"title": "title name", "description: "description text"}
-        """,
-        chunk_token_threshold=1000,
-        overlap_rate=0.0,
-        apply_chunking=False,
-        input_format="markdown",   # or "html", "fit_markdown"
-        extra_args={"temperature": 0.0, "max_tokens": 500}
-    )
+<details markdown="1">
+  <summary>Click for Markdown content</summary>
 
-    # 2. Build the crawler config
-    crawl_config = CrawlerRunConfig(
-        extraction_strategy=llm_strategy,
-        cache_mode=CacheMode.BYPASS
-    )
-
-    # 3. Create a browser config if needed
-    browser_cfg = BrowserConfig(
-        headless=True,
-        text_mode=True,
-        light_mode=True
-        )
-
-    async with AsyncWebCrawler(config=browser_cfg) as crawler:
-        # 4. Let's say we want to crawl a single page
-        result = await crawler.arun(
-            url="https://www.scrapethissite.com/pages/",
-            config=crawl_config
-        )
-
-        if result.success:
-            # 5. The extracted content is presumably JSON
-            data = json.loads(result.extracted_content)
-            print("Extracted items:", data)
-
-            # 6. Show usage stats
-            llm_strategy.show_usage()  # prints token usage
-        else:
-            print("Error:", result.error_message)
-        
-        return data 
-
-if __name__ == "__main__":
-    asyncio.run(main())
-</div>
-
-<details>
-  <summary>
-    output
-  </summary>
-  Extracted items: [{'name': 'Countries of the World: A Simple Example', 'description': 'A single page that lists information about all the countries in the world. Good for those just get started with web scraping.'}, {'name': 'Hockey Teams: Forms, Searching and Pagination', 'description': 'Browse through a database of NHL team stats since 1990. Practice building a scraper that handles common website interface components.'}, {'name': 'Oscar Winning Films: AJAX and Javascript', 'description': 'Click through a bunch of great films. Learn how content is added to the page asynchronously with Javascript and how you can scrape it.'}, {'name': 'Turtles All the Way Down: Frames & iFrames', 'description': 'Some older sites might still use frames to break up thier pages. Modern ones might be using iFrames to expose data. Learn about turtles as you scrape content inside frames.'}, {'name': "Advanced Topics: Real World Challenges You'll Encounter", 'description': "Scraping real websites, you're likely run into a number of common gotchas. Get practice with spoofing headers, handling logins & session cookies, finding CSRF tokens, and other common network errors."}]
-
-=== Token Usage Summary ===
-Type                   Count
-------------------------------
-Completion               277
-Prompt                   986
-Total                  1,263
-
-=== Usage History ===
-Request #    Completion       Prompt        Total
-------------------------------------------------
-1                   277          986        1,263
+  * This should now work reliably.
+  
+  **Bold text** and more.
 </details>
 
-# Headers
 
-## Level 2
-
-### Level 3
-
-#### Level 4
-
-##### Level 5
-
-###### Level 6
-
-# [Headers with links](http://localhost)
-
-## [Level 2](http://localhost)
-
-### [Level 3](http://localhost)
-
-#### [Level 4](http://localhost)
-
-##### [Level 5](http://localhost)
-
-###### [Level 6](http://localhost)
 
 ## Code highlight
 
 Mode specific code highlighting themes. [Kramdown](https://kramdown.gettalong.org/) which is responsible for the color highlighting may be more limited than your IDE.
-
-``` python
-#!/usr/bin/env python
-"""
-Test file for syntax
-"""
-# TODO: Use dark mode
-from sys import os
-
-def foo(bar): 
-    try:
-        print(bar)
-    except NameError:
-        print("Variable bar is not defined")
-
-
-class Bar(object): 
-    def __init__(self):
-        foo(1)
-        self.octal = '\04'
-        self.text = """Example \t\n"""
-    
-    def __exit__(self, *args):
-        print('exit\u1111\xFF')
-        pass
-    
-    @staticmethod
-    def example():
-        assert (1.0 and 2L) or True
-        return { "example": [(1,), (r'raw', u'unicode')]}
-```
-
-## Tables
-
-| hex | dec | oct |
-|-----|-----|-----|
-| 0   | 0   | 0   |
-| 5   | 5   | 5   |
-| A   | 10  | 12  |
-| F   | 16  | 20  |
-| F5  | 21  | 25  |
-
-## KaTeX
-
-Some KaTeX diagrams to check in dark mode:
-
-$$
-\begin{CD}
-A @>a>> B \\
-@VbVV @AAcA \\
-C @= D
-\end{CD}
-$$
-
-$$\utilde{AB}$$
-
-## Mermaid
-
-::: mermaid
-flowchart TB c1--\>a2 subgraph one a1--\>a2 end subgraph two b1--\>b2 end subgraph three c1--\>c2 end
-:::
