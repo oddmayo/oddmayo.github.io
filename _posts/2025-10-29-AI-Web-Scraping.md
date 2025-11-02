@@ -188,12 +188,14 @@ if __name__ == "__main__":
 ```
 
 <details markdown="1">
-  <summary>Click for Markdown content</summary>
+  <summary>Click for output</summary>
 
   * This should now work reliably.
   
   **Bold text** and more.
 </details>
+
+
 
 
 
