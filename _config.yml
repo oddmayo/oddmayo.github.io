@@ -3,14 +3,14 @@ baseurl: ""
 url: "https://oddmayo.github.io"
 
 # THEME-SPECIFIC CONFIGURATION
-title: Camilo Mayorquín Data Science Blog                                    # site's title
-description: "Personal website"      # used by search engines
-avatar: assets/img/triangle.png                         # Empty for no avatar in navbar
+title: Home                                    # site's title
+description: "oddmayo personal website"      # used by search engines
+avatar: assets/img/fsociety.png                         # Empty for no avatar in navbar
 favicon: assets/favicon.ico                             # Icon displayed in the tab
 color_theme: auto
 
 # Header and footer text
-header_text: Hi,welcome to my personal blog  # Change Blog header text
+header_text: Hi, welcome to my personal blog  # Change Blog header text
 header_feature_image: assets/img/header/starry-mountain.jpg
 header_feature_image_responsive: true
 footer_text: >
