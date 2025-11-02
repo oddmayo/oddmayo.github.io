@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.32">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Leverage local LLMs for lazy scraping</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="2025-10-29-AI-Web-Scraping_files/libs/clipboard/clipboard.min.js"></script>
+<script src="2025-10-29-AI-Web-Scraping_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="2025-10-29-AI-Web-Scraping_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="2025-10-29-AI-Web-Scraping_files/libs/quarto-html/popper.min.js"></script>
+<script src="2025-10-29-AI-Web-Scraping_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="2025-10-29-AI-Web-Scraping_files/libs/quarto-html/anchor.min.js"></script>
+<link href="2025-10-29-AI-Web-Scraping_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="2025-10-29-AI-Web-Scraping_files/libs/quarto-html/quarto-syntax-highlighting-37eea08aefeeee20ff55810ff984fec1.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="2025-10-29-AI-Web-Scraping_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="2025-10-29-AI-Web-Scraping_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="2025-10-29-AI-Web-Scraping_files/libs/bootstrap/bootstrap-4eee033644c961f460d105499230c2bf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#set-up" id="toc-set-up" class="nav-link active" data-scroll-target="#set-up">Set up</a></li>
+  <li><a href="#basic-web-scraping" id="toc-basic-web-scraping" class="nav-link" data-scroll-target="#basic-web-scraping">Basic web scraping</a></li>
+  <li><a href="#scraping-with-local-llm" id="toc-scraping-with-local-llm" class="nav-link" data-scroll-target="#scraping-with-local-llm">Scraping with local LLM</a>
+  <ul class="collapse">
+  <li><a href="#simple-website" id="toc-simple-website" class="nav-link" data-scroll-target="#simple-website">Simple website</a></li>
+  <li><a href="#llm-scraping-function" id="toc-llm-scraping-function" class="nav-link" data-scroll-target="#llm-scraping-function">LLM Scraping Function</a></li>
+  <li><a href="#real-website" id="toc-real-website" class="nav-link" data-scroll-target="#real-website">Real website</a></li>
+  <li><a href="#complex-website-limitations" id="toc-complex-website-limitations" class="nav-link" data-scroll-target="#complex-website-limitations">Complex website limitations</a></li>
+  </ul></li>
+  <li><a href="#where-llms-shine" id="toc-where-llms-shine" class="nav-link" data-scroll-target="#where-llms-shine">Where LLMs shine</a>
+  <ul class="collapse">
+  <li><a href="#structure-elements" id="toc-structure-elements" class="nav-link" data-scroll-target="#structure-elements">Structure elements</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Leverage local LLMs for lazy scraping</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Demo</div>
+  </div>
+  </div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>You can download the code from this post here: <a href="https://github.com/oddmayo/crawl4ai-resources">oddmayo/crawl4ai-resources</a></p>
+<p><strong>Contents:</strong></p>
+<ul>
+<li>TOC {:toc}</li>
+</ul>
+<p><a href="https://github.com/unclecode/crawl4ai">Crawl4AI</a> is an open source crawling and scraping library that provides many tools for AI ready data extraction. There are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a ‘result’ object in amicable markdown format for LLMs to feed on.</p>
+<p>This tutorial focuses instead on using LLMs for extracting elements from the markdown in a lazy way. Why? Because even though you can find the use of this feature in the <a href="https://docs.crawl4ai.com/">Docs</a>, it’s hard to find guidance regarding local LLMs. It’s easy to just copy and paste your openAI key, but what if you want deeper control of what you are using at relatively zero cost.</p>
+<section id="set-up" class="level1">
+<h1>Set up</h1>
+<p>We are going to use old reliable Ollama, first things first is to install it in our system (consider using vLLM also).</p>
+<p>For Linux run on terminal:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> curl <span class="at">-fsSL</span> https://ollama.com/install.sh <span class="kw">|</span> <span class="fu">sh</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>For Windows and Mac download and install here: <a href="https://ollama.com/download">Ollama</a></p>
+<p>Verify your installation:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ollama <span class="at">-v</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">ollama</span> version is 0.12.7</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Then we can install Crawl4AI:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> pip install <span class="at">-U</span> crawl4ai</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Run the post-installation setup. I’ve had little success with this command in two Linux systems, but fortunately the next one installs playwright with no problems.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> crawl4ai-setup</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> python <span class="at">-m</span> playwright install <span class="at">--with-deps</span> chromium</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>That’s it for now, we can go to our notebook make the imports and check if the installation had no problems.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> nest_asyncio, os, asyncio, json</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pydantic <span class="im">import</span> BaseModel, Field</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> Any, List, Optional</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> crawl4ai <span class="im">import</span> (</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    AsyncWebCrawler, BrowserConfig, CrawlerRunConfig, CacheMode, </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    LLMConfig, LLMExtractionStrategy</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># crawl4ai health check</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="op">!</span>crawl4ai<span class="op">-</span>doctor</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details>
+<summary>
+Click for output
+</summary>
+<pre><code>[INIT].... → Running Crawl4AI health check... 
+[INIT].... → Crawl4AI 0.7.6 
+[TEST].... ℹ Testing crawling capabilities... 
+[EXPORT].. ℹ Exporting media (PDF/MHTML/screenshot) took 0.38s 
+[FETCH]... ↓ https://crawl4ai.com                                                                 
+| ✓ | ⏱: 3.91s 
+[SCRAPE].. ◆ https://crawl4ai.com                                                              
+| ✓ | ⏱: 0.02s 
+[COMPLETE] ● https://crawl4ai.com                                                                    
+| ✓ | ⏱: 3.93s 
+[COMPLETE] ● ✅ Crawling test passed!</code></pre>
+</details>
+<p>It’s good to check the working status of the library every now and then in case you need to deprecate.</p>
+<p>Since we are working on a notebook the next command is neccessary for allowing the execution of nested <a href="https://docs.python.org/3/library/asyncio.html">asyncio</a> event loops (the building block for blazing fast scraping).</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># if running in notebooks</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>nest_asyncio.<span class="bu">apply</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="basic-web-scraping" class="level1">
+<h1>Basic web scraping</h1>
+<p>This is the example provided in the Docs, briefly explained: we need to define a browser config and a crawler run config for the Crawler. We will focus on single url extraction with the <code>arun()</code> method, but be sure to check out <a href="https://docs.crawl4ai.com/api/arun_many/"><code>arun_many()</code></a> (multiple request might need a proxy for large scale scraping).</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> main():</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    browser_conf <span class="op">=</span> BrowserConfig(headless<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    run_conf <span class="op">=</span> CrawlerRunConfig(</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        cache_mode<span class="op">=</span>CacheMode.BYPASS</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">with</span> AsyncWebCrawler(config<span class="op">=</span>browser_conf) <span class="im">as</span> crawler:</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="cf">await</span> crawler.arun(</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>            url<span class="op">=</span><span class="st">"https://www.scrapethissite.com/pages/"</span>,</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>            config<span class="op">=</span>run_conf</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>        <span class="bu">print</span>(result.markdown)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    asyncio.run(main())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execution time: 2.1s</p>
+<details>
+<summary>
+Click for output
+</summary>
+<pre><code>[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ https://www.scrapethissite.com/pages/                              
+| ✓ | ⏱: 1.30s 
+[SCRAPE].. ◆ https://www.scrapethissite.com/pages/                              
+| ✓ | ⏱: 0.01s 
+[COMPLETE] ● https://www.scrapethissite.com/pages/                              
+| ✓ | ⏱: 1.31s 
+  * [ ![](https://www.scrapethissite.com/static/images/scraper-icon.png) Scrape This Site ](https://www.scrapethissite.com/)
+  * [ ](https://www.scrapethissite.com/pages/)
+  * [ ](https://www.scrapethissite.com/lessons/)
+  * [ ](https://www.scrapethissite.com/faq/)
+  * [ Login ](https://www.scrapethissite.com/login/)
+
+# Web Scraping Sandbox
+* * *
+###  [Countries of the World: A Simple Example](https://www.scrapethissite.com/pages/simple/)
+A single page that lists information about all the countries in the world. Good for those just get started with web scraping. 
+* * *
+###  [Hockey Teams: Forms, Searching and Pagination](https://www.scrapethissite.com/pages/forms/)
+Browse through a database of NHL team stats since 1990. Practice building a scraper that handles common website interface components. 
+* * *
+###  [Oscar Winning Films: AJAX and Javascript](https://www.scrapethissite.com/pages/ajax-javascript/)
+Click through a bunch of great films. Learn how content is added to the page asynchronously with Javascript and how you can scrape it. 
+* * *
+...
+Scraping real websites, you're likely run into a number of common gotchas. Get practice with spoofing headers, handling logins &amp; session cookies, finding CSRF tokens, and other common network errors. 
+* * *
+Lessons and Videos © Hartley Brody 2023</code></pre>
+</details>
+<p>Crawl4AI takes care of a LOT of things in the background (stealth features), make sure to properly explore all the parameters available to make your scraper more robust.</p>
+<p>The output is pretty standard, the html is converted into markdown so any LLM can read it. If you wanted to extract specific elements you could use any of the <a href="https://docs.crawl4ai.com/extraction/no-llm-strategies/">LLM-Free Strategies</a>, but we are going the opposite route.</p>
+</section>
+<section id="scraping-with-local-llm" class="level1">
+<h1>Scraping with local LLM</h1>
+<p>For this task I’m going to use qwen2.5:3b, a pretty well know model for fast data extraction, you should check the list of <a href="https://ollama.com/search">models</a> in Ollama and their task rankings in <a href="https://huggingface.co/models">Hugging Face 🤗</a>.</p>
+<p>Pull the model:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ex">$</span> ollama pull qwen2.5:3b</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Don’t hoard models, make sure to remove any unused ones with <code>ollama rm model_name.</code></p>
+<section id="simple-website" class="level2">
+<h2 class="anchored" data-anchor-id="simple-website">Simple website</h2>
+<p>We can find a simple example of LLM extration in the docs, just modify the provider, instruction and url. We are going to ask the model to extract the title names and their descriptions in JSON format. Be careful with chunking, that options is for long websites such as those with infinite scrolling: X (twitter), facebook, etc.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> Product(BaseModel):</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    name: <span class="bu">str</span></span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    description: <span class="bu">str</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> main():</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 1. Define the LLM extraction strategy</span></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>    llm_strategy <span class="op">=</span> LLMExtractionStrategy(</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        llm_config <span class="op">=</span> LLMConfig(provider<span class="op">=</span><span class="st">"ollama/qwen2.5:3b"</span>, api_token<span class="op">=</span><span class="va">None</span>),</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        schema<span class="op">=</span>Product.model_json_schema(),</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        extraction_type<span class="op">=</span><span class="st">"schema"</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        instruction<span class="op">=</span><span class="st">""" </span></span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="st">        From the crawled content</span></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a><span class="st">        extract the titles and the description in JSON format like this:</span></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="st">        {"name": "title name", "description: "description text"}</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="st">        """</span>,</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>        chunk_token_threshold<span class="op">=</span><span class="dv">1000</span>,</span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>        overlap_rate<span class="op">=</span><span class="fl">0.0</span>,</span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>        apply_chunking<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>        input_format<span class="op">=</span><span class="st">"markdown"</span>,   <span class="co"># or "html", "fit_markdown"</span></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>        extra_args<span class="op">=</span>{<span class="st">"temperature"</span>: <span class="fl">0.0</span>, <span class="st">"max_tokens"</span>: <span class="dv">500</span>}</span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2. Build the crawler config</span></span>
+<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>    crawl_config <span class="op">=</span> CrawlerRunConfig(</span>
+<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>        extraction_strategy<span class="op">=</span>llm_strategy,</span>
+<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        cache_mode<span class="op">=</span>CacheMode.BYPASS</span>
+<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 3. Create a browser config if needed</span></span>
+<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    browser_cfg <span class="op">=</span> BrowserConfig(</span>
+<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>        headless<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        text_mode<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        light_mode<span class="op">=</span><span class="va">True</span></span>
+<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">with</span> AsyncWebCrawler(config<span class="op">=</span>browser_cfg) <span class="im">as</span> crawler:</span>
+<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>        <span class="co"># 4. Let's say we want to crawl a single page</span></span>
+<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="cf">await</span> crawler.arun(</span>
+<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>            url<span class="op">=</span><span class="st">"https://www.scrapethissite.com/pages/"</span>,</span>
+<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>            config<span class="op">=</span>crawl_config</span>
+<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> result.success:</span>
+<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 5. The extracted content is presumably JSON</span></span>
+<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>            data <span class="op">=</span> json.loads(result.extracted_content)</span>
+<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">"Extracted items:"</span>, data)</span>
+<span id="cb13-47"><a href="#cb13-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-48"><a href="#cb13-48" aria-hidden="true" tabindex="-1"></a>            <span class="co"># 6. Show usage stats</span></span>
+<span id="cb13-49"><a href="#cb13-49" aria-hidden="true" tabindex="-1"></a>            llm_strategy.show_usage()  <span class="co"># prints token usage</span></span>
+<span id="cb13-50"><a href="#cb13-50" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb13-51"><a href="#cb13-51" aria-hidden="true" tabindex="-1"></a>            <span class="bu">print</span>(<span class="st">"Error:"</span>, result.error_message)</span>
+<span id="cb13-52"><a href="#cb13-52" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb13-53"><a href="#cb13-53" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> data </span>
+<span id="cb13-54"><a href="#cb13-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-55"><a href="#cb13-55" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="va">__name__</span> <span class="op">==</span> <span class="st">"__main__"</span>:</span>
+<span id="cb13-56"><a href="#cb13-56" aria-hidden="true" tabindex="-1"></a>    asyncio.run(main())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execution time: 5.9s</p>
+<details>
+<summary>
+Click for output
+</summary>
+<pre><code>[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ https://www.scrapethissite.com/pages/                              
+| ✓ | ⏱: 1.21s 
+[SCRAPE].. ◆ https://www.scrapethissite.com/pages/                              
+| ✓ | ⏱: 0.00s 
+[EXTRACT]. ■ https://www.scrapethissite.com/pages/                              
+| ✓ | ⏱: 4.14s 
+[COMPLETE] ● https://www.scrapethissite.com/pages/                              
+| ✓ | ⏱: 5.36s 
+Extracted items: [{'name': 'Countries of the World: A Simple Example', 'description': 'A single page that lists information about all the countries in the world. Good for those just get started with web scraping.'}, {'name': 'Hockey Teams: Forms, Searching and Pagination', 'description': 'Browse through a database of NHL team stats since 1990. Practice building a scraper that handles common website interface components.'}, {'name': 'Oscar Winning Films: AJAX and Javascript', 'description': 'Click through a bunch of great films. Learn how content is added to the page asynchronously with Javascript and how you can scrape it.'}, {'name': 'Turtles All the Way Down: Frames &amp; iFrames', 'description': 'Some older sites might still use frames to break up thier pages. Modern ones might be using iFrames to expose data. Learn about turtles as you scrape content inside frames.'}, {'name': "Advanced Topics: Real World Challenges You'll Encounter", 'description': "Scraping real websites, you're likely run into a number of common gotchas. Get practice with spoofing headers, handling logins &amp; session cookies, finding CSRF tokens, and other common network errors."}]
+
+=== Token Usage Summary ===
+Type                   Count
+------------------------------
+Completion               277
+Prompt                   986
+Total                  1,263
+
+=== Usage History ===
+Request #    Completion       Prompt        Total
+------------------------------------------------
+1                   277          986        1,263</code></pre>
+</details>
+<p>We can see that we got the same result as before <strong>but</strong> this time it took a little bit longer with the advantage of structuring the extracted elements, not even knowing their html tags! Pretty cool right?</p>
+<p>The library also has the option to check the token usage summary per run and history, specially important if using an api key instead.</p>
+<p>Now that we have an idea of the usage of the tool, let’s build a proper function to reuse it for multiple websites.</p>
+</section>
+<section id="llm-scraping-function" class="level2">
+<h2 class="anchored" data-anchor-id="llm-scraping-function">LLM Scraping Function</h2>
+<p>To avoid the problems of calling functions from external files I got rid of Pydantic. This function provides the following arguments for fast usage:</p>
+<ul>
+<li>url: your website url.</li>
+<li>fields: could be a single element or multiple in plain text format.</li>
+<li>provider: your model.</li>
+</ul>
+<p>The rest of the arguments will have default values but are easily modifiable (Notice how we are going to make the same prompt work across multiple websites).</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cf">async</span> <span class="kw">def</span> extract_with_llm(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    url: <span class="bu">str</span>,</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    fields: List[<span class="bu">str</span>],                        <span class="co"># e.g. ["name", "price"] or ["summary"]</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    provider: <span class="bu">str</span> <span class="op">=</span> <span class="st">"ollama/qwen2.5:3b"</span>,      <span class="co"># switch models and providers</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>    api_token: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,          <span class="co"># for non-local providers if needed</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    instruction: Optional[<span class="bu">str</span>] <span class="op">=</span> <span class="va">None</span>,        <span class="co"># site-specific prompt</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    max_tokens: <span class="bu">int</span> <span class="op">=</span> <span class="dv">500</span>,                    <span class="co"># for more difficult websites</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    temperature: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.0</span>,                 <span class="co"># 0 = deterministic</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    input_format: <span class="bu">str</span> <span class="op">=</span> <span class="st">"markdown"</span>,           <span class="co"># or "html"</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    apply_chunking: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>,             <span class="co"># off unless pages are huge</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    chunk_token_threshold: <span class="bu">int</span> <span class="op">=</span> <span class="dv">1000</span>,        <span class="co"># only used if chunking</span></span>
+<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>    overlap_rate: <span class="bu">float</span> <span class="op">=</span> <span class="fl">0.0</span>,                <span class="co"># only used if chunking</span></span>
+<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    headless: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,                    <span class="co"># browser settings</span></span>
+<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    text_mode: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>    light_mode: <span class="bu">bool</span> <span class="op">=</span> <span class="va">True</span>,</span>
+<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>    cache_mode: CacheMode <span class="op">=</span> CacheMode.BYPASS  <span class="co"># bypass cache by default</span></span>
+<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>) <span class="op">-&gt;</span> Any:</span>
+<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">"""</span></span>
+<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a><span class="co">    Extracts specific fields from a webpage using Crawl4AI's LLM extraction strategy</span></span>
+<span id="cb15-20"><a href="#cb15-20" aria-hidden="true" tabindex="-1"></a><span class="co">    """</span></span>
+<span id="cb15-21"><a href="#cb15-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-22"><a href="#cb15-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Build a minimal JSON schema manually</span></span>
+<span id="cb15-23"><a href="#cb15-23" aria-hidden="true" tabindex="-1"></a>    schema <span class="op">=</span> {</span>
+<span id="cb15-24"><a href="#cb15-24" aria-hidden="true" tabindex="-1"></a>        <span class="st">"type"</span>: <span class="st">"object"</span>,</span>
+<span id="cb15-25"><a href="#cb15-25" aria-hidden="true" tabindex="-1"></a>        <span class="st">"properties"</span>: {f: {<span class="st">"type"</span>: <span class="st">"string"</span>} <span class="cf">for</span> f <span class="kw">in</span> fields},</span>
+<span id="cb15-26"><a href="#cb15-26" aria-hidden="true" tabindex="-1"></a>        <span class="st">"required"</span>: fields,</span>
+<span id="cb15-27"><a href="#cb15-27" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb15-28"><a href="#cb15-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-29"><a href="#cb15-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Default LLM instruction</span></span>
+<span id="cb15-30"><a href="#cb15-30" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> instruction <span class="kw">is</span> <span class="va">None</span>:</span>
+<span id="cb15-31"><a href="#cb15-31" aria-hidden="true" tabindex="-1"></a>        example <span class="op">=</span> <span class="st">"{"</span> <span class="op">+</span> <span class="st">", "</span>.join([<span class="ss">f'"</span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">": "example </span><span class="sc">{</span>f<span class="sc">}</span><span class="ss">"'</span> <span class="cf">for</span> f <span class="kw">in</span> fields]) <span class="op">+</span> <span class="st">"}"</span></span>
+<span id="cb15-32"><a href="#cb15-32" aria-hidden="true" tabindex="-1"></a>        instruction <span class="op">=</span> (</span>
+<span id="cb15-33"><a href="#cb15-33" aria-hidden="true" tabindex="-1"></a>            <span class="st">"From the page content, extract these fields in strict JSON with exactly these keys: "</span></span>
+<span id="cb15-34"><a href="#cb15-34" aria-hidden="true" tabindex="-1"></a>            <span class="ss">f"</span><span class="sc">{</span>fields<span class="sc">}</span><span class="ss">. Return a JSON object like: </span><span class="sc">{</span>example<span class="sc">}</span><span class="ss">"</span></span>
+<span id="cb15-35"><a href="#cb15-35" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb15-36"><a href="#cb15-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-37"><a href="#cb15-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define the extraction strategy</span></span>
+<span id="cb15-38"><a href="#cb15-38" aria-hidden="true" tabindex="-1"></a>    llm_strategy <span class="op">=</span> LLMExtractionStrategy(</span>
+<span id="cb15-39"><a href="#cb15-39" aria-hidden="true" tabindex="-1"></a>        llm_config<span class="op">=</span>LLMConfig(provider<span class="op">=</span>provider, api_token<span class="op">=</span>api_token),</span>
+<span id="cb15-40"><a href="#cb15-40" aria-hidden="true" tabindex="-1"></a>        schema<span class="op">=</span>schema,</span>
+<span id="cb15-41"><a href="#cb15-41" aria-hidden="true" tabindex="-1"></a>        extraction_type<span class="op">=</span><span class="st">"schema"</span>,</span>
+<span id="cb15-42"><a href="#cb15-42" aria-hidden="true" tabindex="-1"></a>        instruction<span class="op">=</span>instruction,</span>
+<span id="cb15-43"><a href="#cb15-43" aria-hidden="true" tabindex="-1"></a>        chunk_token_threshold<span class="op">=</span>chunk_token_threshold,</span>
+<span id="cb15-44"><a href="#cb15-44" aria-hidden="true" tabindex="-1"></a>        overlap_rate<span class="op">=</span>overlap_rate,</span>
+<span id="cb15-45"><a href="#cb15-45" aria-hidden="true" tabindex="-1"></a>        apply_chunking<span class="op">=</span>apply_chunking,</span>
+<span id="cb15-46"><a href="#cb15-46" aria-hidden="true" tabindex="-1"></a>        input_format<span class="op">=</span>input_format,</span>
+<span id="cb15-47"><a href="#cb15-47" aria-hidden="true" tabindex="-1"></a>        extra_args<span class="op">=</span>{</span>
+<span id="cb15-48"><a href="#cb15-48" aria-hidden="true" tabindex="-1"></a>            <span class="st">"temperature"</span>: temperature,</span>
+<span id="cb15-49"><a href="#cb15-49" aria-hidden="true" tabindex="-1"></a>            <span class="st">"max_tokens"</span>: max_tokens,</span>
+<span id="cb15-50"><a href="#cb15-50" aria-hidden="true" tabindex="-1"></a>        },</span>
+<span id="cb15-51"><a href="#cb15-51" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb15-52"><a href="#cb15-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-53"><a href="#cb15-53" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Configure crawler</span></span>
+<span id="cb15-54"><a href="#cb15-54" aria-hidden="true" tabindex="-1"></a>    crawl_config <span class="op">=</span> CrawlerRunConfig(</span>
+<span id="cb15-55"><a href="#cb15-55" aria-hidden="true" tabindex="-1"></a>        extraction_strategy<span class="op">=</span>llm_strategy,</span>
+<span id="cb15-56"><a href="#cb15-56" aria-hidden="true" tabindex="-1"></a>        cache_mode<span class="op">=</span>cache_mode,</span>
+<span id="cb15-57"><a href="#cb15-57" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb15-58"><a href="#cb15-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-59"><a href="#cb15-59" aria-hidden="true" tabindex="-1"></a>    browser_cfg <span class="op">=</span> BrowserConfig(</span>
+<span id="cb15-60"><a href="#cb15-60" aria-hidden="true" tabindex="-1"></a>        headless<span class="op">=</span>headless,</span>
+<span id="cb15-61"><a href="#cb15-61" aria-hidden="true" tabindex="-1"></a>        text_mode<span class="op">=</span>text_mode,</span>
+<span id="cb15-62"><a href="#cb15-62" aria-hidden="true" tabindex="-1"></a>        light_mode<span class="op">=</span>light_mode,</span>
+<span id="cb15-63"><a href="#cb15-63" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb15-64"><a href="#cb15-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-65"><a href="#cb15-65" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Run crawl and extract data</span></span>
+<span id="cb15-66"><a href="#cb15-66" aria-hidden="true" tabindex="-1"></a>    <span class="cf">async</span> <span class="cf">with</span> AsyncWebCrawler(config<span class="op">=</span>browser_cfg) <span class="im">as</span> crawler:</span>
+<span id="cb15-67"><a href="#cb15-67" aria-hidden="true" tabindex="-1"></a>        result <span class="op">=</span> <span class="cf">await</span> crawler.arun(url<span class="op">=</span>url, config<span class="op">=</span>crawl_config)</span>
+<span id="cb15-68"><a href="#cb15-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-69"><a href="#cb15-69" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="kw">not</span> result.success:</span>
+<span id="cb15-70"><a href="#cb15-70" aria-hidden="true" tabindex="-1"></a>            <span class="cf">raise</span> <span class="pp">RuntimeError</span>(result.error_message)</span>
+<span id="cb15-71"><a href="#cb15-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-72"><a href="#cb15-72" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Return parsed JSON</span></span>
+<span id="cb15-73"><a href="#cb15-73" aria-hidden="true" tabindex="-1"></a>        <span class="cf">try</span>:</span>
+<span id="cb15-74"><a href="#cb15-74" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> json.loads(result.extracted_content)</span>
+<span id="cb15-75"><a href="#cb15-75" aria-hidden="true" tabindex="-1"></a>        <span class="cf">except</span> <span class="pp">Exception</span>:</span>
+<span id="cb15-76"><a href="#cb15-76" aria-hidden="true" tabindex="-1"></a>            <span class="co"># Return raw content if not valid JSON</span></span>
+<span id="cb15-77"><a href="#cb15-77" aria-hidden="true" tabindex="-1"></a>            <span class="cf">return</span> result.extracted_content</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</section>
+<section id="real-website" class="level2">
+<h2 class="anchored" data-anchor-id="real-website">Real website</h2>
+<p>Let’s test our function with microcenter, asking it to extract the name and price of a product:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> extract_with_llm(</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    url<span class="op">=</span><span class="st">"https://www.microcenter.com/product/670842/intel-core-i7-14700k-raptor-lake-s-refresh-34ghz-twenty-core-lga-1700-boxed-processor-heatsink-not-included"</span>,</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    fields<span class="op">=</span>[<span class="st">"name"</span>,<span class="st">"price"</span>],</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    provider<span class="op">=</span><span class="st">"ollama/qwen2.5:3b"</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execution time: 5.1s</p>
+<details>
+<summary>
+Click for output
+</summary>
+<pre><code>INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 0.94s 
+[SCRAPE].. ◆ 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 0.00s 
+[EXTRACT]. ■ 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 3.51s 
+[COMPLETE] ● 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 4.46s 
+
+[{'name': 'Intel Core i7-14700K Raptor Lake-S Refresh 34GHz Twenty-Core LGA 1700 Boxed Processor Heatsink Not Included',
+  'price': '$299.99'}]</code></pre>
+</details>
+<p>Fast and easy, we should test a harder website.</p>
+</section>
+<section id="complex-website-limitations" class="level2">
+<h2 class="anchored" data-anchor-id="complex-website-limitations">Complex website limitations</h2>
+<p>Amazon is one of the most common websites to scrape, how would our scraper perform?</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> extract_with_llm(</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    url<span class="op">=</span><span class="st">"https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJKBV/ref=sr_1_1?sr=8-1"</span>,</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    fields<span class="op">=</span>[<span class="st">"name"</span>,<span class="st">"price"</span>],</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>    provider<span class="op">=</span><span class="st">"ollama/qwen2.5:3b"</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execution time: 9.1s</p>
+<details>
+<summary>
+Click for output
+</summary>
+<pre><code>[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 3.00s 
+[SCRAPE].. ◆ 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 0.29s 
+[EXTRACT]. ■ 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 5.22s 
+[COMPLETE] ● 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 8.52s 
+
+[{'name': 'Bose Cancelling Wireless Bluetooth Headphones', 'price': '$249.00'}]</code></pre>
+</details>
+<p>That took longer than the previous ones. If you look closely something’s not right: the price. Why is the price not accurate? Amazon product pages contain a lot of prices depending on the product, alongside multiple recommendations.</p>
+<p>If you really wanted you could overcome this by doing some fine-tuning to consistently extract the price of the main product, but for lazy purposes let’s give the win to Amazon this time. This is a case where the other extraction strategies would do the task with no problems.</p>
+</section>
+</section>
+<section id="where-llms-shine" class="level1">
+<h1>Where LLMs shine</h1>
+<p>Using an LLM for scraping is a matter of targeting the right websites for the task. For example, websites that constantly change. Let’s ask for the summary of this Harvard Master program.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> extract_with_llm(</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>    url<span class="op">=</span><span class="st">"https://extension.harvard.edu/academics/programs/computer-science-masters-degree-program/#program-overview"</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>    fields<span class="op">=</span>[<span class="st">"program summary"</span>],</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    provider<span class="op">=</span><span class="st">"ollama/qwen2.5:3b"</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execution time: 5.6s</p>
+<details>
+<summary>
+Click for output
+</summary>
+<pre><code>[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 1.44s 
+[SCRAPE].. ◆ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 0.06s 
+[EXTRACT]. ■ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 3.62s 
+[COMPLETE] ● 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 5.12s 
+
+[{'program summary': 'The Computer Science Master’s Degree Program at Harvard Extension School is an advanced degree designed for lifelong learners who want to improve their lives through education. This program offers rigorous academics and innovative teaching capabilities, accessible online, in evenings, or at your own pace.'}]</code></pre>
+</details>
+<p>Not only we took advantage of extraction but also of the LLM summarization capabilities still using the same prompt.</p>
+<section id="structure-elements" class="level2">
+<h2 class="anchored" data-anchor-id="structure-elements">Structure elements</h2>
+<p>Of course we could target different sections, it doesn’t matter if their location change, as long as what we need is somewhere in the website we can play with the parameters to get a consistent result.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="cf">await</span> extract_with_llm(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>    url<span class="op">=</span><span class="st">"https://extension.harvard.edu/academics/programs/computer-science-masters-degree-program/#program-overview"</span>,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>    fields<span class="op">=</span>[<span class="st">"title"</span>, <span class="st">"featured faculty"</span>, <span class="st">"career oppurtunities"</span>, <span class="st">"next term"</span>],</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    provider<span class="op">=</span><span class="st">"ollama/qwen2.5:3b"</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<p>Execution time: 6.2s</p>
+<details>
+<summary>
+Click for output
+</summary>
+<pre><code>[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 0.80s 
+[SCRAPE].. ◆ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 0.05s 
+[EXTRACT]. ■ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 4.87s 
+[COMPLETE] ● 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 5.73s 
+[{'title': 'Computer Science Master’s Degree Program',
+  'featured faculty': '[Henry H. Leitner Senior Lecturer on Computer Science, Harvard University](https://extension.harvard.edu/faculty/henry-h-leitner/), [David J. Malan Senior Lecturer on Computer Science, Harvard University](https://extension.harvard.edu/faculty/david-j-malan/)',
+  'career oppurtunities': 'Students in our Computer Science Master’s Program build the skills essential to career advancement in computer science, software engineering, and computer and software architecture. Potential job titles include: * Computer Scientist * Software Engineer * Software Developer * Systems Architect * Software Architect',
+  'next term': 'January &amp; Spring Course Registration Opens November 6'}]</code></pre>
+</details>
+<p>There we go, consistent lazy scraping in less lines of code compared to traditional tools such as Selenium. Remember to explore the other strategies and the other capabilities of the Crawl4AI library.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

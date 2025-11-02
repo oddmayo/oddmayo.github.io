@@ -69,7 +69,7 @@ from crawl4ai import (
 !crawl4ai-doctor
 ```
 
-<details>
+<details markdown="1">
 
 <summary>Click for output</summary>
 
@@ -122,7 +122,7 @@ if __name__ == "__main__":
 
 Execution time: 2.1s
 
-<details>
+<details markdown="1">
 
 <summary>Click for output</summary>
 
@@ -240,7 +240,7 @@ if __name__ == "__main__":
 
 Execution time: 5.9s
 
-<details>
+<details markdown="1">
 
 <summary>Click for output</summary>
 
@@ -381,7 +381,7 @@ await extract_with_llm(
 
 Execution time: 5.1s
 
-<details>
+<details markdown="1">
 
 <summary>Click for output</summary>
 
@@ -422,7 +422,7 @@ await extract_with_llm(
 
 Execution time: 9.1s
 
-<details>
+<details markdown="1">
 
 <summary>Click for output</summary>
 
@@ -464,7 +464,7 @@ await extract_with_llm(
 
 Execution time: 5.6s
 
-<details>
+<details markdown="1">
 
 <summary>Click for output</summary>
 
@@ -504,7 +504,7 @@ await extract_with_llm(
 
 Execution time: 6.2s
 
-<details>
+<details markdown="1">
 
 <summary>Click for output</summary>
 
