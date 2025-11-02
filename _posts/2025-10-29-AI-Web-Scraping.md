@@ -73,10 +73,14 @@ from crawl4ai import (
 ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 >>>>>>> parent of d420943 (main body finished)
 <details markdown="1">
+=======
+<details>
+>>>>>>> parent of 69cc2ce (restored markdown and test)
 
 <summary>Click for output</summary>
 
@@ -130,7 +134,7 @@ if __name__ == "__main__":
 
 Execution time: 2.1s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -249,7 +253,7 @@ if __name__ == "__main__":
 
 Execution time: 5.9s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -393,7 +397,7 @@ await extract_with_llm(
 ```
 Execution time: 5.1s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -434,7 +438,7 @@ await extract_with_llm(
 
 Execution time: 9.1s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -476,7 +480,7 @@ await extract_with_llm(
 
 Execution time: 5.6s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -517,11 +521,15 @@ await extract_with_llm(
 Execution time: 6.2s
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 
 
 >>>>>>> parent of d420943 (main body finished)
 <details markdown="1">
+=======
+<details>
+>>>>>>> parent of 69cc2ce (restored markdown and test)
 
 <summary>Click for output</summary>
 
