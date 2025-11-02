@@ -6,8 +6,12 @@ tags: [Scraping, LLM]
 categories: Demo
 ---
 
+You can download the code from this post here: [oddmayo/crawl4ai-resources](https://github.com/oddmayo/crawl4ai-resources)
+
+**Contents:**
 * TOC 
 {:toc}
+
 
 [Crawl4AI](https://github.com/unclecode/crawl4ai) is an open source crawling and scraping library that provides many tools for AI ready data extraction. There are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a 'result' object in amicable markdown format for LLMs to feed on.
 
@@ -87,11 +91,9 @@ from crawl4ai import (
 </details>
 
 
-
-
 It's good to check the working status of the library every now and then in case you need to deprecate.
 
-Since we are working on a notebook the next command is neccessary for allowing the execution of nested asyncio event loops (the building block for blazing fast scraping).
+Since we are working on a notebook the next command is neccessary for allowing the execution of nested [asyncio](https://docs.python.org/3/library/asyncio.html) event loops (the building block for blazing fast scraping).
 
 ``` python
 # if running in notebooks
@@ -160,7 +162,7 @@ Lessons and Videos © Hartley Brody 2023
 </details>
 
 
-Crawl4AI takes care of a LOT of things in the background, make sure to properly explore all the parameters available to make your scraper more robust.
+Crawl4AI takes care of a LOT of things in the background (stealth features), make sure to properly explore all the parameters available to make your scraper more robust.
 
 The output is pretty standard, the html is converted into markdown so any LLM can read it. If you wanted to extract specific elements you could use any of the [LLM-Free Strategies](https://docs.crawl4ai.com/extraction/no-llm-strategies/), but we are going the opposite route.
 
@@ -281,6 +283,15 @@ Now that we have an idea of the usage of the tool, let's build a proper function
 
 ## LLM Scraping Function
 
+To avoid the problems of calling functions from external files I got rid of Pydantic. This function provides the following arguments for fast usage:
+
+- url: your website url.
+- fields: could be a single element or multiple in plain text format.
+- provider: your model.
+
+The rest of the arguments will have default values but are easily modifiable (Notice how we are going to make the same prompt work across multiple websites).
+
+
 ``` python
 async def extract_with_llm(
     url: str,
@@ -300,18 +311,17 @@ async def extract_with_llm(
     cache_mode: CacheMode = CacheMode.BYPASS  # bypass cache by default
 ) -> Any:
     """
-    Extracts specific fields from a webpage using Crawl4AI's LLM extraction strategy,
-    without relying on Pydantic. Produces consistent output across all environments.
+    Extracts specific fields from a webpage using Crawl4AI's LLM extraction strategy
     """
 
-    # --- Build a minimal JSON schema manually ---
+    # Build a minimal JSON schema manually
     schema = {
         "type": "object",
         "properties": {f: {"type": "string"} for f in fields},
         "required": fields,
     }
 
-    # --- Default LLM instruction ---
+    # Default LLM instruction
     if instruction is None:
         example = "{" + ", ".join([f'"{f}": "example {f}"' for f in fields]) + "}"
         instruction = (
@@ -319,7 +329,7 @@ async def extract_with_llm(
             f"{fields}. Return a JSON object like: {example}"
         )
 
-    # --- Define the extraction strategy ---
+    # Define the extraction strategy
     llm_strategy = LLMExtractionStrategy(
         llm_config=LLMConfig(provider=provider, api_token=api_token),
         schema=schema,
@@ -335,7 +345,7 @@ async def extract_with_llm(
         },
     )
 
-    # --- Configure crawler ---
+    # Configure crawler
     crawl_config = CrawlerRunConfig(
         extraction_strategy=llm_strategy,
         cache_mode=cache_mode,
@@ -347,7 +357,7 @@ async def extract_with_llm(
         light_mode=light_mode,
     )
 
-    # --- Run crawl and extract data ---
+    # Run crawl and extract data
     async with AsyncWebCrawler(config=browser_cfg) as crawler:
         result = await crawler.arun(url=url, config=crawl_config)
 
@@ -366,7 +376,168 @@ async def extract_with_llm(
 
 ## Real website
 
-Now
+Let's test our function with microcenter, asking it to extract the name and price of a product:
+
+```python
+await extract_with_llm(
+    url="https://www.microcenter.com/product/670842/intel-core-i7-14700k-raptor-lake-s-refresh-34ghz-twenty-core-lga-1700-boxed-processor-heatsink-not-included",
+    fields=["name","price"],
+    provider="ollama/qwen2.5:3b"
+)
+```
+Execution time: 5.1s
+
+<details markdown="1">
+
+<summary>Click for output</summary>
+
+```         
+INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 0.94s 
+[SCRAPE].. ◆ 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 0.00s 
+[EXTRACT]. ■ 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 3.51s 
+[COMPLETE] ● 
+https://www.microcenter.com/product/670842/intel...e-lga-1700-boxed-processor-he
+atsink-not-included  | ✓ | ⏱: 4.46s 
+
+[{'name': 'Intel Core i7-14700K Raptor Lake-S Refresh 34GHz Twenty-Core LGA 1700 Boxed Processor Heatsink Not Included',
+  'price': '$299.99'}]
+```
+
+</details>
+
+Fast and easy, we should test a harder website.
+
+## Complex website limitations
+
+Amazon is one of the most common websites to scrape, how would our scraper perform?
+
+```python
+await extract_with_llm(
+    url="https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJKBV/ref=sr_1_1?sr=8-1",
+    fields=["name","price"],
+    provider="ollama/qwen2.5:3b"
+)
+```
+
+Execution time: 9.1s
+
+<details markdown="1">
+
+<summary>Click for output</summary>
+
+```         
+[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 3.00s 
+[SCRAPE].. ◆ 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 0.29s 
+[EXTRACT]. ■ 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 5.22s 
+[COMPLETE] ● 
+https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJK
+BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 8.52s 
+
+[{'name': 'Bose Cancelling Wireless Bluetooth Headphones', 'price': '$249.00'}]
+```
+</details>
+
+That took longer than the previous ones. If you look closely something's not right: the price. Why is the price not accurate? Amazon product pages contain a lot of prices depending on the product, alongside multiple recommendations.
+
+If you really wanted you could overcome this by doing some fine-tuning to consistently extract the price of the main product, but for lazy purposes let's give the win to Amazon this time. This is a case where the other extraction strategies would do the task with no problems.
+
+
+# Where LLMs shine
+
+Using an LLM for scraping is a matter of targeting the right websites for the task. For example, websites that constantly change....
+
+```python
+await extract_with_llm(
+    url="https://extension.harvard.edu/academics/programs/computer-science-masters-degree-program/#program-overview",
+    fields=["program summary"],
+    provider="ollama/qwen2.5:3b"
+)
+```
+
+Execution time: 5.6s
+
+<details markdown="1">
+
+<summary>Click for output</summary>
+
+```         
+[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 1.44s 
+[SCRAPE].. ◆ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 0.06s 
+[EXTRACT]. ■ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 3.62s 
+[COMPLETE] ● 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 5.12s 
+
+[{'program summary': 'The Computer Science Master’s Degree Program at Harvard Extension School is an advanced degree designed for lifelong learners who want to improve their lives through education. This program offers rigorous academics and innovative teaching capabilities, accessible online, in evenings, or at your own pace.',
+  'error': False}]
+```
+</details>
+
+Take advantage of LLM summarization.
+
+
+## Structure elements
+
+
+```python
+await extract_with_llm(
+    url="https://extension.harvard.edu/academics/programs/computer-science-masters-degree-program/#program-overview",
+    fields=["title", "featured faculty", "career oppurtunities", "next term"],
+    provider="ollama/qwen2.5:3b"
+)
+```
+
+Execution time: 6.2s
+
+
+
+<details markdown="1">
+
+<summary>Click for output</summary>
+
+```         
+[INIT].... → Crawl4AI 0.7.6 
+[FETCH]... ↓ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 0.80s 
+[SCRAPE].. ◆ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 0.05s 
+[EXTRACT]. ■ 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 4.87s 
+[COMPLETE] ● 
+https://extension.harvard.edu/academics/programs...science-masters-degree-progra
+m/#program-overview  | ✓ | ⏱: 5.73s 
+[{'title': 'Computer Science Master’s Degree Program',
+  'featured faculty': '[Henry H. Leitner Senior Lecturer on Computer Science, Harvard University](https://extension.harvard.edu/faculty/henry-h-leitner/), [David J. Malan Senior Lecturer on Computer Science, Harvard University](https://extension.harvard.edu/faculty/david-j-malan/)',
+  'career oppurtunities': 'Students in our Computer Science Master’s Program build the skills essential to career advancement in computer science, software engineering, and computer and software architecture. Potential job titles include: * Computer Scientist * Software Engineer * Software Developer * Systems Architect * Software Architect',
+  'next term': 'January & Spring Course Registration Opens November 6'}]
+```
+</details>
+
+
 
 ## Code highlight
 
