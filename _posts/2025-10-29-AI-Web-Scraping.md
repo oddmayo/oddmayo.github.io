@@ -8,10 +8,10 @@ categories: Demo
 
 You can download the code from this post here: [oddmayo/crawl4ai-resources](https://github.com/oddmayo/crawl4ai-resources)
 
-**Contents:**
+**Contents:** 
+
 * TOC 
 {:toc}
-
 
 [Crawl4AI](https://github.com/unclecode/crawl4ai) is an open source crawling and scraping library that provides many tools for AI ready data extraction. There are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a 'result' object in amicable markdown format for LLMs to feed on.
 
@@ -69,8 +69,7 @@ from crawl4ai import (
 !crawl4ai-doctor
 ```
 
-
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -89,7 +88,6 @@ from crawl4ai import (
 ```
 
 </details>
-
 
 It's good to check the working status of the library every now and then in case you need to deprecate.
 
@@ -124,7 +122,7 @@ if __name__ == "__main__":
 
 Execution time: 2.1s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -160,7 +158,6 @@ Lessons and Videos © Hartley Brody 2023
 ```
 
 </details>
-
 
 Crawl4AI takes care of a LOT of things in the background (stealth features), make sure to properly explore all the parameters available to make your scraper more robust.
 
@@ -243,7 +240,7 @@ if __name__ == "__main__":
 
 Execution time: 5.9s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -272,7 +269,6 @@ Request #    Completion       Prompt        Total
 1                   277          986        1,263
 ```
 
-
 </details>
 
 We can see that we got the same result as before **but** this time it took a little bit longer with the advantage of structuring the extracted elements, not even knowing their html tags! Pretty cool right?
@@ -285,12 +281,11 @@ Now that we have an idea of the usage of the tool, let's build a proper function
 
 To avoid the problems of calling functions from external files I got rid of Pydantic. This function provides the following arguments for fast usage:
 
-- url: your website url.
-- fields: could be a single element or multiple in plain text format.
-- provider: your model.
+-   url: your website url.
+-   fields: could be a single element or multiple in plain text format.
+-   provider: your model.
 
 The rest of the arguments will have default values but are easily modifiable (Notice how we are going to make the same prompt work across multiple websites).
-
 
 ``` python
 async def extract_with_llm(
@@ -370,24 +365,23 @@ async def extract_with_llm(
         except Exception:
             # Return raw content if not valid JSON
             return result.extracted_content
-
 ```
-
 
 ## Real website
 
 Let's test our function with microcenter, asking it to extract the name and price of a product:
 
-```python
+``` python
 await extract_with_llm(
     url="https://www.microcenter.com/product/670842/intel-core-i7-14700k-raptor-lake-s-refresh-34ghz-twenty-core-lga-1700-boxed-processor-heatsink-not-included",
     fields=["name","price"],
     provider="ollama/qwen2.5:3b"
 )
 ```
+
 Execution time: 5.1s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -418,7 +412,7 @@ Fast and easy, we should test a harder website.
 
 Amazon is one of the most common websites to scrape, how would our scraper perform?
 
-```python
+``` python
 await extract_with_llm(
     url="https://www.amazon.com/Bose-Cancelling-Wireless-Bluetooth-Headphones/dp/B07Q9MJKBV/ref=sr_1_1?sr=8-1",
     fields=["name","price"],
@@ -428,7 +422,7 @@ await extract_with_llm(
 
 Execution time: 9.1s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -449,18 +443,18 @@ BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 8.52s
 
 [{'name': 'Bose Cancelling Wireless Bluetooth Headphones', 'price': '$249.00'}]
 ```
+
 </details>
 
 That took longer than the previous ones. If you look closely something's not right: the price. Why is the price not accurate? Amazon product pages contain a lot of prices depending on the product, alongside multiple recommendations.
 
 If you really wanted you could overcome this by doing some fine-tuning to consistently extract the price of the main product, but for lazy purposes let's give the win to Amazon this time. This is a case where the other extraction strategies would do the task with no problems.
 
-
 # Where LLMs shine
 
-Using an LLM for scraping is a matter of targeting the right websites for the task. For example, websites that constantly change....
+Using an LLM for scraping is a matter of targeting the right websites for the task. For example, websites that constantly change. Let's ask for the summary of this Harvard Master program.
 
-```python
+``` python
 await extract_with_llm(
     url="https://extension.harvard.edu/academics/programs/computer-science-masters-degree-program/#program-overview",
     fields=["program summary"],
@@ -470,7 +464,7 @@ await extract_with_llm(
 
 Execution time: 5.6s
 
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -489,18 +483,18 @@ m/#program-overview  | ✓ | ⏱: 3.62s
 https://extension.harvard.edu/academics/programs...science-masters-degree-progra
 m/#program-overview  | ✓ | ⏱: 5.12s 
 
-[{'program summary': 'The Computer Science Master’s Degree Program at Harvard Extension School is an advanced degree designed for lifelong learners who want to improve their lives through education. This program offers rigorous academics and innovative teaching capabilities, accessible online, in evenings, or at your own pace.',
-  'error': False}]
+[{'program summary': 'The Computer Science Master’s Degree Program at Harvard Extension School is an advanced degree designed for lifelong learners who want to improve their lives through education. This program offers rigorous academics and innovative teaching capabilities, accessible online, in evenings, or at your own pace.'}]
 ```
+
 </details>
 
-Take advantage of LLM summarization.
-
+Not only we took advantage of extraction but also of the LLM summarization capabilities still using the same prompt.
 
 ## Structure elements
 
+Of course we could target different sections, it doesn't matter if their location change, as long as what we need is somewhere in the website we can play with the parameters to get a consistent result.
 
-```python
+``` python
 await extract_with_llm(
     url="https://extension.harvard.edu/academics/programs/computer-science-masters-degree-program/#program-overview",
     fields=["title", "featured faculty", "career oppurtunities", "next term"],
@@ -510,9 +504,7 @@ await extract_with_llm(
 
 Execution time: 6.2s
 
-
-
-<details markdown="1">
+<details>
 
 <summary>Click for output</summary>
 
@@ -535,10 +527,7 @@ m/#program-overview  | ✓ | ⏱: 5.73s
   'career oppurtunities': 'Students in our Computer Science Master’s Program build the skills essential to career advancement in computer science, software engineering, and computer and software architecture. Potential job titles include: * Computer Scientist * Software Engineer * Software Developer * Systems Architect * Software Architect',
   'next term': 'January & Spring Course Registration Opens November 6'}]
 ```
+
 </details>
 
-
-
-## Code highlight
-
-Mode specific code highlighting themes. [Kramdown](https://kramdown.gettalong.org/) which is responsible for the color highlighting may be more limited than your IDE.
+There we go, consistent lazy scraping in less lines of code compared to traditional tools such as Selenium. Remember to explore the other strategies and the other capabilities of the Crawl4AI library.
