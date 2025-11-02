@@ -2,6 +2,9 @@
 layout: post
 toc: true
 title: Leverage local LLMs for lazy scraping
+feature-img: "assets/img/feature-img/bulldozer.jpg"
+thumbnail: "assets/img/thumbnails/feature-img/bulldozer.jpg"
+color: rgba(203, 27, 53, 1)
 tags: [Scraping, LLM]
 categories: Demo
 ---
