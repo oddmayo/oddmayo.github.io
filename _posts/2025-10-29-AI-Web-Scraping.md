@@ -8,7 +8,7 @@ thumbnail: "assets/img/thumbnails/feature-img/owl.jpg"
 color: rgba(203, 27, 53, 1)
 tags: [Scraping, LLM]
 categories: scraping
-favicon: assets/favicon.ico
+favicon: assets/brain.ico
 
 ---
 

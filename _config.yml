@@ -6,7 +6,7 @@ url: "https://oddmayo.github.io"
 title: Home                                    # site's title
 description: "oddmayo personal website"      # used by search engines
 avatar: assets/img/fsociety.png                         # Empty for no avatar in navbar
-favicon: assets/favicon.ico                             # Icon displayed in the tab
+favicon: assets/brain.ico                             # Icon displayed in the tab
 color_theme: auto
 
 # Header and footer text
