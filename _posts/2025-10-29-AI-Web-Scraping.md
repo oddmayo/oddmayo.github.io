@@ -9,16 +9,19 @@ tags: [Scraping, LLM]
 categories: Demo
 ---
 
-You can download the code from this post here: [oddmayo/crawl4ai-resources](https://github.com/oddmayo/crawl4ai-resources)
+[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open source crawling and scraping library that provides many tools for AI ready data extraction. There are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a 'result' object in amicable markdown format for LLMs to feed on.
 
-**Contents:** 
+This tutorial focuses instead on using LLMs for extracting elements from the markdown in a lazy way. Why? Because even though you can find the use of this feature in the [Docs](https://docs.crawl4ai.com/), it's hard to find guidance regarding local LLMs. It's easy to just copy and paste your openAI key, but what if you want deeper control of what you are using at relatively zero cost.
+
+**CONTENTS:**
 
 * TOC 
 {:toc}
 
-[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open source crawling and scraping library that provides many tools for AI ready data extraction. There are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a 'result' object in amicable markdown format for LLMs to feed on.
+You can download the code from this post here: [oddmayo/crawl4ai-resources](https://github.com/oddmayo/crawl4ai-resources)
 
-This tutorial focuses instead on using LLMs for extracting elements from the markdown in a lazy way. Why? Because even though you can find the use of this feature in the [Docs](https://docs.crawl4ai.com/), it's hard to find guidance regarding local LLMs. It's easy to just copy and paste your openAI key, but what if you want deeper control of what you are using at relatively zero cost.
+
+
 
 # Set up
 
@@ -104,6 +107,13 @@ nest_asyncio.apply()
 # Basic web scraping
 
 This is the example provided in the Docs, briefly explained: we need to define a browser config and a crawler run config for the Crawler. We will focus on single url extraction with the `arun()` method, but be sure to check out [`arun_many()`](https://docs.crawl4ai.com/api/arun_many/) (multiple request might need a proxy for large scale scraping).
+
+What we see in the website:
+
+<div style="max-width:400px; margin:auto;">
+  {% include aligner.html images="posts/crawl4ai/basic.png" column=1 caption="www.scrapethissite.com main content" %}
+</div>
+
 
 ``` python
 async def main():
@@ -284,9 +294,9 @@ Now that we have an idea of the usage of the tool, let's build a proper function
 
 To avoid the problems of calling functions from external files I got rid of Pydantic. This function provides the following arguments for fast usage:
 
--   url: your website url.
--   fields: could be a single element or multiple in plain text format.
--   provider: your model.
+-   url: str - your website url.
+-   fields: list - could be a single element or multiple in plain text format.
+-   provider: str- your model.
 
 The rest of the arguments will have default values but are easily modifiable (Notice how we are going to make the same prompt work across multiple websites).
 
@@ -374,6 +384,10 @@ async def extract_with_llm(
 
 Let's test our function with microcenter, asking it to extract the name and price of a product:
 
+<div style="max-width:700px; margin:auto;">
+  {% include aligner.html images="posts/crawl4ai/medium.png" column=1 caption="microcenter product main content" %}
+</div>
+
 ``` python
 await extract_with_llm(
     url="https://www.microcenter.com/product/670842/intel-core-i7-14700k-raptor-lake-s-refresh-34ghz-twenty-core-lga-1700-boxed-processor-heatsink-not-included",
@@ -414,6 +428,10 @@ Fast and easy, we should test a harder website.
 ## Complex website limitations
 
 Amazon is one of the most common websites to scrape, how would our scraper perform?
+
+<div style="max-width:900px; margin:auto;">
+  {% include aligner.html images="posts/crawl4ai/hard.png" column=1 caption="amazon product main content" %}
+</div>
 
 ``` python
 await extract_with_llm(
@@ -456,6 +474,10 @@ If you really wanted you could overcome this by doing some fine-tuning to consis
 # Where LLMs shine
 
 Using an LLM for scraping is a matter of targeting the right websites for the task. For example, websites that constantly change. Let's ask for the summary of this Harvard Master program.
+
+<div style="max-width:900px; margin:auto;">
+  {% include aligner.html images="posts/crawl4ai/harvard.png" column=1 caption="harvard program main content" %}
+</div>
 
 ``` python
 await extract_with_llm(
