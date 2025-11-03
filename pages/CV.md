@@ -2,11 +2,11 @@
 layout: page
 title: CV
 subtitle: Camilo Mayorquín - Curriculum Vitae
-permalink: /CV/
-gallery_path: "assets/img/pexels"
+permalink: /cv/
+feature-img: "assets/img/pexels/earth.jpg"
 excluded: true
 position: 3
-tags: [Page]
+tags: [CV]
 ---
 
 
