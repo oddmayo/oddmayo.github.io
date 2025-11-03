@@ -2,12 +2,14 @@
 layout: post
 toc: true
 title: Leverage local LLMs for lazy scraping
-author: Camilo Mayorquín
+author: oddmayo
 feature-img: "assets/img/feature-img/owl.jpg"
 thumbnail: "assets/img/thumbnails/feature-img/owl.jpg"
 color: rgba(203, 27, 53, 1)
 tags: [Scraping, LLM]
-categories: Demo
+categories: scraping
+favicon: assets/favicon.ico
+
 ---
 
 [Crawl4AI](https://github.com/unclecode/crawl4ai) is an open source crawling and scraping library that provides many tools for AI ready data extraction. There are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a 'result' object in amicable markdown format for LLMs to feed on.
