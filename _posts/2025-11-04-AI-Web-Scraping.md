@@ -24,6 +24,10 @@ This tutorial, however, focuses instead on using local LLMs for extracting eleme
 You can download the code from this post here: [oddmayo/crawl4ai-resources](https://github.com/oddmayo/crawl4ai-resources)
 
 
+**requirements:** \
+`crawl4ai==0.7.6` \
+`nest_asyncio==1.6.0` \
+`pydantic==2.12.3`
 
 
 # Set up
