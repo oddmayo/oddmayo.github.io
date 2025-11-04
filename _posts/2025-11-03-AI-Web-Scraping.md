@@ -12,9 +12,9 @@ favicon: assets/brain.ico
 
 ---
 
-[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open source crawling and scraping library that provides many tools for AI ready data extraction. There are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a 'result' object in amicable markdown format for LLMs to feed on.
+[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open-source crawling and scraping library that provides many tools for AI-ready data extraction. While there are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a object with the result in a amicable Markdown format for LLMs to use.
 
-This tutorial focuses instead on using LLMs for extracting elements from the markdown in a lazy way. Why? Because even though you can find the use of this feature in the [Docs](https://docs.crawl4ai.com/), it's hard to find guidance regarding local LLMs. It's easy to just copy and paste your openAI key, but what if you want deeper control of what you are using at relatively zero cost.
+This tutorial, however, focuses instead on using LLMs for extracting elements from the Markdown in a lazy way. Why? Even though you can find information about this feature in the [Docs](https://docs.crawl4ai.com/), it's difficult to find guidance about local LLMs. While it's easy to just copy and paste your OpenAI key, what if you want more control over what you're using at relatively zero cost?
 
 **CONTENTS:**
 
@@ -28,7 +28,7 @@ You can download the code from this post here: [oddmayo/crawl4ai-resources](http
 
 # Set up
 
-We are going to use old reliable Ollama, first things first is to install it in our system (consider using vLLM also).
+We're going to use the reliable Ollama. First, we need to install it in our system. Consider using vLLM as well.
 
 For Linux run on terminal:
 
@@ -36,7 +36,7 @@ For Linux run on terminal:
 $ curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-For Windows and Mac download and install here: [Ollama](https://ollama.com/download)
+For Windows and Mac OS download and install here: [Ollama](https://ollama.com/download)
 
 Verify your installation:
 
@@ -51,7 +51,7 @@ Then we can install Crawl4AI:
 $ pip install -U crawl4ai
 ```
 
-Run the post-installation setup. I've had little success with this command in two Linux systems, but fortunately the next one installs playwright with no problems.
+Run the post-installation setup. I've had limited success with this command on two Linux systems, but the next one installs Playwright without any problems.
 
 ``` bash
 $ crawl4ai-setup
@@ -61,7 +61,7 @@ $ crawl4ai-setup
 $ python -m playwright install --with-deps chromium
 ```
 
-That's it for now, we can go to our notebook make the imports and check if the installation had no problems.
+That's it for now. We can go to our notebook, make the imports, and check that the installation was problem-free.
 
 ``` python
 import nest_asyncio, os, asyncio, json
@@ -98,9 +98,9 @@ from crawl4ai import (
 
 </details>
 
-It's good to check the working status of the library every now and then in case you need to deprecate.
+It's a good idea to check the working status of the library periodically in case you need to deprecate it.
 
-Since we are working on a notebook the next command is neccessary for allowing the execution of nested [asyncio](https://docs.python.org/3/library/asyncio.html) event loops (the building block for blazing fast scraping).
+Since we are working in a notebook, the following command is neccessary to allow the execution of nested [asyncio](https://docs.python.org/3/library/asyncio.html) event loops (the building block for blazing-fast scraping).
 
 ``` python
 # if running in notebooks
@@ -109,7 +109,7 @@ nest_asyncio.apply()
 
 # Basic web scraping
 
-This is the example provided in the Docs, briefly explained: we need to define a browser config and a crawler run config for the Crawler. We will focus on single url extraction with the `arun()` method, but be sure to check out [`arun_many()`](https://docs.crawl4ai.com/api/arun_many/) (multiple request might need a proxy for large scale scraping).
+This is the example provided in the Docs, briefly explained: We need to define both a browser and a crawler run configuration for the Crawler. We will focus on single URL extraction with the `arun()` method, but be sure to check out [`arun_many()`](https://docs.crawl4ai.com/api/arun_many/) (multiple request may require a proxy for large-scale scraping).
 
 What we see in the website:
 
@@ -175,13 +175,13 @@ Lessons and Videos © Hartley Brody 2023
 
 </details>
 
-Crawl4AI takes care of a LOT of things in the background (stealth features), make sure to properly explore all the parameters available to make your scraper more robust.
+Crawl4AI takes care of a lot of things in the background (browser headers, captchas, ). Make sure to explore all the available parameters to create a more robust scraper.
 
-The output is pretty standard, the html is converted into markdown so any LLM can read it. If you wanted to extract specific elements you could use any of the [LLM-Free Strategies](https://docs.crawl4ai.com/extraction/no-llm-strategies/), but we are going the opposite route.
+The output is pretty standard; the HTML is converted into Markdown so any LLM can read it. If you want to extract specific elements you can use any of the [LLM-Free Strategies](https://docs.crawl4ai.com/extraction/no-llm-strategies/), but we are going in the opposite direction.
 
 # Scraping with local LLM
 
-For this task I'm going to use qwen2.5:3b, a pretty well know model for fast data extraction, you should check the list of [models](https://ollama.com/search) in Ollama and their task rankings in [Hugging Face 🤗](https://huggingface.co/models).
+For this task I'm going to use Qwen2.5:3b, a pretty well know model for fast data extraction. You should check the list of [models](https://ollama.com/search) in Ollama and their task rankings in [Hugging Face 🤗](https://huggingface.co/models).
 
 Pull the model:
 
@@ -189,11 +189,11 @@ Pull the model:
 $ ollama pull qwen2.5:3b
 ```
 
-Don't hoard models, make sure to remove any unused ones with `ollama rm model_name.`
+Don't hoard models. Make sure to delete any you're not using with the command `ollama rm model_name.`
 
 ## Simple website
 
-We can find a simple example of LLM extration in the docs, just modify the provider, instruction and url. We are going to ask the model to extract the title names and their descriptions in JSON format. Be careful with chunking, that options is for long websites such as those with infinite scrolling: X (twitter), facebook, etc.
+We can find a simple example of LLM extraction in the documentation. Just modify the provider, instruction and URL. We will ask the model to extract the titles descriptions in JSON format. Be careful with chunking; that option is for long websites such as those with infinite scrolling: X (Twitter), Facebook, etc.
 
 ``` python
 class Product(BaseModel):
@@ -287,21 +287,21 @@ Request #    Completion       Prompt        Total
 
 </details>
 
-We can see that we got the same result as before **but** this time it took a little bit longer with the advantage of structuring the extracted elements, not even knowing their html tags! Pretty cool right?
+We can see that we got the same result as before, **but** this time it took a little longer. The upside is that we were able to structure the extracted elements without knowing their HTML tags! Pretty cool, right?
 
-The library also has the option to check the token usage summary per run and history, specially important if using an api key instead.
+The library also has the option to check the token usage summary per run and history, which is specially important if you're using an API key.
 
-Now that we have an idea of the usage of the tool, let's build a proper function to reuse it for multiple websites.
+Now that we have an idea of how to use the tool, let's build a proper function to reuse it for multiple websites.
 
 ## LLM Scraping Function
 
-To avoid the problems of calling functions from external files I got rid of Pydantic. This function provides the following arguments for fast usage:
+To avoid the problems with calling functions from external files, I removed Pydantic. This function provides the following arguments for quick use:
 
--   url: str - your website url.
--   fields: list - could be a single element or multiple in plain text format.
--   provider: str- your model.
+-   url: `str` - your website url.
+-   fields: `list` - could be a single element or multiple in plain text format.
+-   provider: `str`- your model.
 
-The rest of the arguments will have default values but are easily modifiable (Notice how we are going to make the same prompt work across multiple websites).
+The rest of the arguments have default values, but they can be easily modified. Notice how we are going to use the same prompt for multiple websites.
 
 ``` python
 async def extract_with_llm(
@@ -385,7 +385,7 @@ async def extract_with_llm(
 
 ## Real website
 
-Let's test our function with microcenter, asking it to extract the name and price of a product:
+Let's test our function with MicroCenter by asking it to extract the name and price of a product.
 
 <div style="max-width:700px; margin:auto;">
   {% include aligner.html images="posts/crawl4ai/medium.png" column=1 caption="microcenter product main content" %}
@@ -426,11 +426,11 @@ atsink-not-included  | ✓ | ⏱: 4.46s
 
 </details>
 
-Fast and easy, we should test a harder website.
+It's fast and easy. We should test a harder website.
 
 ## Complex website limitations
 
-Amazon is one of the most common websites to scrape, how would our scraper perform?
+Amazon is one of the most commonly scraped websites. How would our scraper perform?
 
 <div style="max-width:900px; margin:auto;">
   {% include aligner.html images="posts/crawl4ai/hard.png" column=1 caption="amazon product main content" %}
@@ -470,13 +470,13 @@ BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 8.52s
 
 </details>
 
-That took longer than the previous ones. If you look closely something's not right: the price. Why is the price not accurate? Amazon product pages contain a lot of prices depending on the product, alongside multiple recommendations.
+That took longer than the previous ones. If you look closely, you'll see that something's not right—the price. Why is the price inaccurate? Amazon product pages contain multiple prices and recommendations depending on the product.
 
-If you really wanted you could overcome this by doing some fine-tuning to consistently extract the price of the main product, but for lazy purposes let's give the win to Amazon this time. This is a case where the other extraction strategies would do the task with no problems.
+You could overcome this by fine-tuning to consistently extract the price of the main product, but, for the sake of simplicity, let's give Amazon the win this time. In this case, the other extraction strategies would complete the task with no problems.
 
 # Where LLMs shine
 
-Using an LLM for scraping is a matter of targeting the right websites for the task. For example, websites that constantly change. Let's ask for the summary of this Harvard Master program.
+Using an LLM for scraping requires targeting the right websites. For example, target websites that constantly change. Let's request a summary of this Harvard master's program.
 
 <div style="max-width:900px; margin:auto;">
   {% include aligner.html images="posts/crawl4ai/harvard.png" column=1 caption="harvard program main content" %}
@@ -516,11 +516,11 @@ m/#program-overview  | ✓ | ⏱: 5.12s
 
 </details>
 
-Not only we took advantage of extraction but also of the LLM summarization capabilities still using the same prompt.
+We took advantage of both extraction and the LLM's summarization capabilities, all while using the same prompt.
 
 ## Structure elements
 
-Of course we could target different sections, it doesn't matter if their location change, as long as what we need is somewhere in the website we can play with the parameters to get a consistent result.
+Of course, we could target different sections. It doesn't matter if their location changes as long as what we need is on the website. We can adjust the parameters to achieve consistent results.
 
 ``` python
 await extract_with_llm(
@@ -558,4 +558,4 @@ m/#program-overview  | ✓ | ⏱: 5.73s
 
 </details>
 
-There we go, consistent lazy scraping in less lines of code compared to traditional tools such as Selenium. Remember to explore the other strategies and the other capabilities of the Crawl4AI library.
+There we go—consistent, lazy scraping with fewer lines of code than with traditional tools like Selenium. Be sure to explore the other strategies and capabilities of the Crawl4AI library!

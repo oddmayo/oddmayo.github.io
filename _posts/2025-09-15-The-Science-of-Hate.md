@@ -6,7 +6,7 @@ author: oddmayo
 feature-img: "assets/img/feature-img/flamingo.jpg"
 thumbnail: "assets/img/thumbnails/feature-img/flamingo.jpg"
 color: rgba(143, 3, 40, 1)
-tags: [social, sentiments]
+tags: [Social, Sentiments]
 categories: Sentiments
 favicon: assets/brain.ico
 
