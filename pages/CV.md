@@ -10,7 +10,7 @@ tags: [CV]
 ---
 
 
-<object data="../assets/data/cv.pdf" width="1000" height="1500" type='application/pdf'></object>
+<object data="../assets/data/cv.pdf" width="600" height="1500" type='application/pdf'></object>
 
 
 
