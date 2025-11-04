@@ -9,4 +9,4 @@ position: 3
 tags: [CV]
 ---
 
-<iframe src="../assets/data/cv.pdf" width="1200" height="1200"> </iframe>
+<iframe src="../assets/data/cv.pdf" width="1500" height="1200"> </iframe>
