@@ -432,7 +432,7 @@ It's fast and easy. We should test a harder website.
 
 Amazon is one of the most commonly scraped websites. How would our scraper perform?
 
-<div style="max-width:900px; margin:auto;">
+<div style="max-width:800px; margin:auto;">
   {% include aligner.html images="posts/crawl4ai/hard.png" column=1 caption="amazon product main content" %}
 </div>
 
@@ -478,7 +478,7 @@ You could overcome this by fine-tuning to consistently extract the price of the 
 
 Using an LLM for scraping requires targeting the right websites. For example, target websites that constantly change. Let's request a summary of this Harvard master's program.
 
-<div style="max-width:900px; margin:auto;">
+<div style="max-width:800px; margin:auto;">
   {% include aligner.html images="posts/crawl4ai/harvard.png" column=1 caption="harvard program main content" %}
 </div>
 
