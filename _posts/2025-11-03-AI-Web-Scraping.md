@@ -14,7 +14,7 @@ favicon: assets/brain.ico
 
 [Crawl4AI](https://github.com/unclecode/crawl4ai) is an open-source crawling and scraping library that provides many tools for AI-ready data extraction. While there are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a object with the result in a amicable Markdown format for LLMs to use.
 
-This tutorial, however, focuses instead on using LLMs for extracting elements from the Markdown in a lazy way. Why? Even though you can find information about this feature in the [Docs](https://docs.crawl4ai.com/), it's difficult to find guidance about local LLMs. While it's easy to just copy and paste your OpenAI key, what if you want more control over what you're using at relatively zero cost?
+This tutorial, however, focuses instead on using local LLMs for extracting elements from the Markdown in a lazy way. Why? Even though you can find information about this feature in the [Docs](https://docs.crawl4ai.com/), it's difficult to find guidance about local LLMs. While it's easy to just copy and paste your OpenAI key, what if you want more control over what you're using at relatively zero cost?
 
 **CONTENTS:**
 

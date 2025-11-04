@@ -7,7 +7,7 @@ feature-img: "assets/img/feature-img/hawk.jpg"
 thumbnail: "assets/img/thumbnails/feature-img/hawk.jpg"
 color: rgba(210, 115, 19, 1)
 tags: [Audio, Music]
-categories: Audio
+categories: audio
 favicon: assets/brain.ico
 
 ---
