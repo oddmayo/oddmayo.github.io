@@ -480,7 +480,7 @@ You could overcome this by fine-tuning to ensure the consistent extraction of th
 
 # Where LLMs shine
 
-Using an LLM for scraping requires targeting the right websites. For example, target websites that constantly change. Let's request a summary of this Harvard master's program.
+Using an LLM for scraping requires targeting the right websites. For example, target websites that constantly change with lots of text. Let's request a summary of this Harvard master's program.
 
 <div style="max-width:800px; margin:auto;">
   {% include aligner.html images="posts/crawl4ai/harvard.png" column=1 caption="harvard program main content" %}
