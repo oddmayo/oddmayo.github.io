@@ -12,7 +12,7 @@ favicon: assets/brain.ico
 
 ---
 
-[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open-source crawling and scraping library that provides a variety of tools for AI-ready data extraction. While there are many excellent tutorials available, most focus on CSS or XPath extraction strategies. Typically, [LLMs](https://www.nvidia.com/en-us/glossary/large-language-models/) are not involved until the result object has been extracted.
+[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open-source crawling and scraping python library that provides a variety of tools for AI-ready data extraction. While there are many excellent tutorials available, most focus on CSS or XPath extraction strategies. Typically, [LLMs](https://www.nvidia.com/en-us/glossary/large-language-models/) are not involved until the result object has been extracted.
 
 However, this tutorial focuses on using LLMs as a lazy extraction strategy. Why? Although you can find information about this feature in the [Docs](https://docs.crawl4ai.com/), it's difficult to find guidance about local LLMs. While it's easy to simply copy and paste your OpenAI key, what if you want more control at zero cost?
 
@@ -24,13 +24,19 @@ However, this tutorial focuses on using LLMs as a lazy extraction strategy. Why?
 You can download the code from this post here: [oddmayo/crawl4ai-resources](https://github.com/oddmayo/crawl4ai-resources)
 
 
+**languages:** 
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=white)
+
+
 **requirements:** \
 `crawl4ai==0.7.6` \
 `nest_asyncio==1.6.0` \
 `pydantic==2.12.3`
 
 
-# Set up
+
+# Setup
 
 We're going to use old reliable Ollama. First, we need to install it in our system. Consider using vLLM as well.
 
