@@ -12,9 +12,9 @@ favicon: assets/brain.ico
 
 ---
 
-[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open-source crawling and scraping library that provides many tools for AI-ready data extraction. While there are many great tutorials out there, but most if not all focus on CSS or XPath extraction strategies that provide a object with the result in a amicable Markdown format for LLMs to use.
+[Crawl4AI](https://github.com/unclecode/crawl4ai) is an open-source crawling and scraping library that provides a variety of tools for AI-ready data extraction. While there are many excellent tutorials available, most focus on CSS or XPath extraction strategies. Typically, [LLMs](https://www.nvidia.com/en-us/glossary/large-language-models/) are not involved until the result object has been extracted.
 
-This tutorial, however, focuses instead on using local LLMs for extracting elements from the Markdown in a lazy way. Why? Even though you can find information about this feature in the [Docs](https://docs.crawl4ai.com/), it's difficult to find guidance about local LLMs. While it's easy to just copy and paste your OpenAI key, what if you want more control over what you're using at relatively zero cost?
+However, this tutorial focuses on using LLMs as a lazy extraction strategy. Why? Although you can find information about this feature in the [Docs](https://docs.crawl4ai.com/), it's difficult to find guidance about local LLMs. While it's easy to simply copy and paste your OpenAI key, what if you want more control at zero cost?
 
 **CONTENTS:**
 
@@ -32,7 +32,7 @@ You can download the code from this post here: [oddmayo/crawl4ai-resources](http
 
 # Set up
 
-We're going to use the reliable Ollama. First, we need to install it in our system. Consider using vLLM as well.
+We're going to use old reliable Ollama. First, we need to install it in our system. Consider using vLLM as well.
 
 For Linux run on terminal:
 
@@ -55,7 +55,7 @@ Then we can install Crawl4AI:
 $ pip install -U crawl4ai
 ```
 
-Run the post-installation setup. I've had limited success with this command on two Linux systems, but the next one installs Playwright without any problems.
+Run the post-installation setup. I've had limited success with this command on two Linux systems, but the next one installs [Playwright](https://playwright.dev/) without any problems.
 
 ``` bash
 $ crawl4ai-setup
@@ -179,7 +179,7 @@ Lessons and Videos © Hartley Brody 2023
 
 </details>
 
-Crawl4AI takes care of a lot of things in the background (browser headers, captchas, ). Make sure to explore all the available parameters to create a more robust scraper.
+Crawl4AI takes care of a lot of things in the background (browser headers, captchas, human behaviour simulation, etc). Make sure to explore all the available parameters to create a more robust scraper.
 
 The output is pretty standard; the HTML is converted into Markdown so any LLM can read it. If you want to extract specific elements you can use any of the [LLM-Free Strategies](https://docs.crawl4ai.com/extraction/no-llm-strategies/), but we are going in the opposite direction.
 
@@ -474,9 +474,9 @@ BV/ref=sr_1_1?sr=8-1 | ✓ | ⏱: 8.52s
 
 </details>
 
-That took longer than the previous ones. If you look closely, you'll see that something's not right—the price. Why is the price inaccurate? Amazon product pages contain multiple prices and recommendations depending on the product.
+That took longer than the previous ones. If you look closely, you'll notice that the price is wrong. But if you look even more closely, you'll see that the title is not exactly the same as the one shown in the image. Why are these details inaccurate? Amazon product pages contain multiple prices and recommendations depending on the product.
 
-You could overcome this by fine-tuning to consistently extract the price of the main product, but, for the sake of simplicity, let's give Amazon the win this time. In this case, the other extraction strategies would complete the task with no problems.
+You could overcome this by fine-tuning to ensure the consistent extraction of the desired elements of the main product. However, for lazy purposes, let's give Amazon the win this time. The other extraction strategies would complete the task without any problems in this case.
 
 # Where LLMs shine
 
@@ -562,4 +562,8 @@ m/#program-overview  | ✓ | ⏱: 5.73s
 
 </details>
 
-There we go—consistent, lazy scraping with fewer lines of code than with traditional tools like Selenium. Be sure to explore the other strategies and capabilities of the Crawl4AI library!
+There we go — consistent, lazy scraping, taking advantage of modern tools.
+
+# Concluding remarks
+
+ I've always considered web scraping to be a boring task, but the tools for the job have improved so much over time that, nowadays, with libraries like this one and AI, extracting web data has become fun and challenging (including the competitor data you crave). Plus, you can do it with far fewer lines of code than with traditional tools like Selenium, which feels refreshing. Be sure to explore the other strategies and capabilities of the Crawl4AI library!
