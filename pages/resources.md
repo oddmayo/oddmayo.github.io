@@ -9,3 +9,23 @@ tags: [Page]
 ---
 
 Work in progress...
+
+# Mathematics
+
+# Statistics
+
+# Programming
+
+# AI
+
+## Data Science
+
+## Machine/Statistical Learning
+
+## Deep Learning
+
+## LLMs and GenAI
+
+# MLOps
+
+# Cloud
