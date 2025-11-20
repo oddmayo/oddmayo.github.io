@@ -3,7 +3,7 @@ layout: page
 title : Resources
 permalink: /resources/
 subtitle: "Vault of valuable resources" 
-feature-img: "assets/img/pexels/blackhole.jpg"
+feature-img: "assets/img/pexels/resources.jpg"
 position: 4
 tags: [Page]
 ---
