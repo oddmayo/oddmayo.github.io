@@ -61,7 +61,7 @@ import librosa.display
 
 ## Load audio files
 
-We use librosa to load the data, in my case I have FLAC files from my purchased albums but you can load MP3 or WAV files as well (I won't judge if you get them through dubious means). Setting `sr=None` preserves the native sample rate (typically 44100 Hz for CD-quality audio).
+We use librosa to load the data, in my case I have FLAC files from my purchased albums but you can load MP3 or WAV files as well. Setting `sr=None` preserves the native sample rate (typically 44100 Hz for CD-quality audio).
 
 ``` python
 # Load audio files
@@ -94,3 +94,33 @@ output:
  'Wind Tempos': {'duration_sec': 364.11496598639457,
   'sample_rate': 44100} }
 ```
+
+The durations are approximately 5 minutes for "Sea of Voices" and just over 6 minutes for "Wind Tempos".
+
+
+# First listen: Opening atmospheres
+
+Before diving into analysis, let's hear how each track opens. Notices the contrast:
+
+``` python
+# Sea of Voices: Opening 10 seconds — ethereal pad entrance
+print("🌊 Sea of Voices — Opening atmosphere (0:00-0:10)")
+audio_excerpt(y_sov, sr_sov, start_sec=0, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/sea-opening.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+
+``` python
+# Wind Tempos: First piano entrance around 0:08
+print("🍃 Wind Tempos — First piano notes (0:05-0:15)")
+audio_excerpt(y_wt, sr_wt, start_sec=5, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/wind-opening.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
