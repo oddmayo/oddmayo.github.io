@@ -9,6 +9,7 @@ color: rgba(210, 115, 19, 1)
 tags: [Audio, Music]
 categories: audio
 favicon: assets/brain.ico
+mathjax: true
 
 ---
 
@@ -48,7 +49,7 @@ You can download the code from this post here: [oddmayo/audio-analysis](https://
 
 **requirements:** \
 
-# Setup and loading
+# Setup and Loading
 
 ``` python
 import numpy as np
@@ -59,7 +60,7 @@ import librosa
 import librosa.display
 ```
 
-## Load audio files
+## Load Audio Files
 
 We use librosa to load the data, in my case I have FLAC files from my purchased albums but you can load MP3 or WAV files as well. Setting `sr=None` preserves the native sample rate (typically 44100 Hz for CD-quality audio).
 
@@ -98,7 +99,7 @@ output:
 The durations are approximately 5 minutes for "Sea of Voices" and just over 6 minutes for "Wind Tempos".
 
 
-# First listen: Opening atmospheres
+# First Listen: Opening Atmospheres
 
 Before diving into analysis, let's hear how each track opens. Notices the contrast:
 
@@ -124,3 +125,51 @@ audio_excerpt(y_wt, sr_wt, start_sec=5, duration_sec=10)
   <source src="/assets/audio/porter-robinson/wind-opening.wav" type="audio/wav">
   Your browser does not support the audio element.
 </audio>
+
+The opening of "Sea of Voices" is characterized by a lush, evolving pad sound that creates an immersive atmosphere, while "Wind Tempos" introduces a more immediate and melodic piano motif that sets a different emotional tone.
+
+# Understanding Digital Audio
+
+Digital audio represents continuous sound waves as discrete samples.
+
+## Sample Rate (fs)
+
+The **sample rate** determines how many times per second the audio signal is measured. By the **Nyquist theorem**, to accurately capture a frequency $$f$$, we need a sample rate of at least $$2f$$:
+
+$$f_s \geq 2f_{max}$$
+
+Since human hearing ranges up to ~20 kHz, CD-quality audio uses 44.1 kHz (or 48 kHz for video).
+
+## Amplitude
+
+Each sample is a floating-point value (typically normalized to [-1, 1]) representing the air pressure displacement at that instant.
+
+## Duration
+
+Total duration in seconds:
+
+$$T = \frac{N}{f_s}$$
+
+where $$N$$ is the total number of samples.
+
+
+
+``` python
+# Examining the raw sample data
+# Audio is just a 1D array of amplitude values
+
+# First 100 samples of Sea of Voices
+sample_view = y_sov[:100]
+
+fig, ax = plt.subplots(figsize=(12, 3))
+ax.stem(sample_view, linefmt='C0-', markerfmt='C0o', basefmt='k-')
+ax.set_xlabel('Sample Index')
+ax.set_ylabel('Amplitude')
+ax.set_title(f'First 100 samples of Sea of Voices (sr={sr_sov} Hz)')
+ax.axhline(y=0, color='k', linewidth=0.5)
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/sea-samples.png" column=1 caption="raw sample data" %}
+</div>
