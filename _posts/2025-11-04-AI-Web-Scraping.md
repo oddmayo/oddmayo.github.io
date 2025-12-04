@@ -1,7 +1,7 @@
 ---
 layout: post
 toc: true
-title: Leverage local LLMs for lazy scraping
+title: Leverage Local LLMs for Lazy Scraping
 author: oddmayo
 feature-img: "assets/img/feature-img/owl.jpg"
 thumbnail: "assets/img/thumbnails/feature-img/owl.jpg"
@@ -117,7 +117,7 @@ Since we are working in a notebook, the following command is neccessary to allow
 nest_asyncio.apply()
 ```
 
-# Basic web scraping
+# Basic Web Scraping
 
 This is the example provided in the Docs, briefly explained: We need to define both a browser and a crawler run configuration for the Crawler. We will focus on single URL extraction with the `arun()` method, but be sure to check out [`arun_many()`](https://docs.crawl4ai.com/api/arun_many/) (multiple request may require a proxy for large-scale scraping).
 
@@ -189,7 +189,7 @@ Crawl4AI takes care of a lot of things in the background (browser headers, captc
 
 The output is pretty standard; the HTML is converted into Markdown so any LLM can read it. If you want to extract specific elements you can use any of the [LLM-Free Strategies](https://docs.crawl4ai.com/extraction/no-llm-strategies/), but we are going in the opposite direction.
 
-# Scraping with local LLM
+# Scraping with Local LLM
 
 For this task I'm going to use Qwen2.5:3b, a pretty well know model for fast data extraction. You should check the list of [models](https://ollama.com/search) in Ollama and their task rankings in [Hugging Face 🤗](https://huggingface.co/models).
 
@@ -201,7 +201,7 @@ $ ollama pull qwen2.5:3b
 
 Don't hoard models. Make sure to delete any you're not using with the command `ollama rm model_name.`
 
-## Simple website
+## Simple Website
 
 We can find a simple example of LLM extraction in the documentation. Just modify the provider, instruction and URL. We will ask the model to extract the titles descriptions in JSON format. Be careful with chunking; that option is for long websites such as those with infinite scrolling: X (Twitter), Facebook, etc.
 
@@ -393,7 +393,7 @@ async def extract_with_llm(
             return result.extracted_content
 ```
 
-## Real website
+## Real Website
 
 Let's test our function with MicroCenter by asking it to extract the name and price of a product.
 
@@ -438,7 +438,7 @@ atsink-not-included  | ✓ | ⏱: 4.46s
 
 It's fast and easy. We should test a harder website.
 
-## Complex website limitations
+## Complex Website Limitations
 
 Amazon is one of the most commonly scraped websites. How would our scraper perform?
 
@@ -484,7 +484,7 @@ That took longer than the previous ones. If you look closely, you'll notice that
 
 You could overcome this by fine-tuning to ensure the consistent extraction of the desired elements of the main product. However, for lazy purposes, let's give Amazon the win this time. The other extraction strategies would complete the task without any problems in this case.
 
-# Where LLMs shine
+# Where LLMs Shine
 
 Using an LLM for scraping requires targeting the right websites. For example, target websites that constantly change with lots of text. Let's request a summary of this Harvard master's program.
 
@@ -528,7 +528,7 @@ m/#program-overview  | ✓ | ⏱: 5.12s
 
 We took advantage of both extraction and the LLM's summarization capabilities, all while using the same prompt.
 
-## Structure elements
+## Structure Elements
 
 Of course, we could target different sections. It doesn't matter if their location changes as long as what we need is on the website. We can adjust the parameters to achieve consistent results.
 
@@ -570,6 +570,6 @@ m/#program-overview  | ✓ | ⏱: 5.73s
 
 There we go — consistent, lazy scraping, taking advantage of modern tools.
 
-# Concluding remarks
+# Concluding Remarks
 
  I've always considered web scraping to be a boring task, but the tools for the job have improved so much over time that, nowadays, with libraries like this one and AI, extracting web data has become fun and challenging (including the competitor data you crave). Plus, you can do it with far fewer lines of code than with traditional tools like Selenium, which feels refreshing. Be sure to explore the other strategies and capabilities of the Crawl4AI library!
