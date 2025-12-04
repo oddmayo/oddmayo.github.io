@@ -1,7 +1,7 @@
 ---
 layout: post
 toc: true
-title: Audio Analysis - How Porter Robinson rewired my brain
+title: Audio Analysis - How Porter Robinson Rewired my Brain
 author: oddmayo
 feature-img: "assets/img/feature-img/hawk.jpg"
 thumbnail: "assets/img/thumbnails/feature-img/hawk.jpg"
@@ -173,3 +173,45 @@ plt.tight_layout()
 <div style="max-width:1000px; margin:auto;">
   {% include aligner.html images="posts/audio/sea-samples.png" column=1 caption="raw sample data" %}
 </div>
+
+The plot shows the first 100 samples of "Sea of Voices". Each stem represents the amplitude at that sample index. The waveform oscillates around zero, indicating positive and negative air pressure variations.
+
+# Waveform Visualization
+
+The waveform shows amplitude over time. It reveals the overall dynamic structure of a track:
+- **Sea of Voices**: Gradual builds with atmospheric, sustained layers
+- **Wind Tempos**: More percussive attacks with piano transients
+
+``` python
+# Compare full waveforms side by side
+fig, axes = plt.subplots(2, 1, figsize=(14, 6), sharex=False)
+
+# Sea of Voices
+time_sov = np.arange(len(y_sov)) / sr_sov
+axes[0].plot(time_sov, y_sov, linewidth=0.3, color='#4A90D9')
+axes[0].set_ylabel('Amplitude')
+axes[0].set_title('Sea of Voices — Ethereal layers, gradual dynamics')
+axes[0].set_xlim(0, time_sov[-1])
+
+# Wind Tempos
+time_wt = np.arange(len(y_wt)) / sr_wt
+axes[1].plot(time_wt, y_wt, linewidth=0.3, color='#7AC36A')
+axes[1].set_xlabel('Time (seconds)')
+axes[1].set_ylabel('Amplitude')
+axes[1].set_title('Wind Tempos — Piano attacks, dynamic expression')
+axes[1].set_xlim(0, time_wt[-1])
+
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/waveform.png" column=1 caption="waveform comparison" %}
+</div>
+
+The waveform plots illustrate the contrasting dynamics of the two tracks. "Sea of Voices" shows smooth, flowing amplitude changes, while "Wind Tempos" has sharper peaks corresponding to piano notes.
+
+``` python
+# Listen to excerpts
+# Sea of Voices - the vocal build around 30 seconds
+Audio(data=y_sov[25*sr_sov:35*sr_sov], rate=sr_sov)
+```
