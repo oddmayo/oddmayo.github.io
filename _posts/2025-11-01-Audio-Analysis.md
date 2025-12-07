@@ -338,3 +338,141 @@ plt.tight_layout()
 <div style="max-width:1000px; margin:auto;">
   {% include aligner.html images="posts/audio/frequency-spectrum.png" column=1 caption="frequency spectrum viz" %}
 </div>
+
+# Spectrograms: Time-Frequency Analysis
+
+The **Short-Time Fourier Transform (STFT)** applies the DFT to overlapping windows of the signal, producing a time-frequency representation.
+
+For a window function $$w[n]$$ of length $$L$$:
+
+$$X[m, k] = \sum_{n=0}^{L-1} x[n + mH] \cdot w[n] \cdot e^{-i2\pi kn/L}$$
+
+where:
+- $$m$$ is the frame (time) index
+- $$H$$ is the hop length (samples between frames)
+- $$k$$ is the frequency bin
+
+## Implementation from scratch
+
+``` python
+def stft_numpy(x, n_fft=2048, hop_length=512, window='hann'):
+    """
+    Compute the Short-Time Fourier Transform from scratch.
+    
+    Parameters:
+        x: Input signal
+        n_fft: FFT size (window length)
+        hop_length: Number of samples between frames
+        window: Window function type
+    
+    Returns:
+        S: Complex STFT matrix (n_fft//2+1, n_frames)
+    """
+    # Create window function
+    if window == 'hann':
+        win = 0.5 - 0.5 * np.cos(2 * np.pi * np.arange(n_fft) / n_fft)
+    else:
+        win = np.ones(n_fft)
+    
+    # Pad signal to center the first window
+    x_padded = np.pad(x, (n_fft // 2, n_fft // 2), mode='reflect')
+    
+    # Number of frames
+    n_frames = 1 + (len(x_padded) - n_fft) // hop_length
+    
+    # Pre-allocate STFT matrix
+    S = np.zeros((n_fft // 2 + 1, n_frames), dtype=np.complex128)
+    
+    for m in range(n_frames):
+        # Extract windowed frame
+        start = m * hop_length
+        frame = x_padded[start:start + n_fft] * win
+        
+        # Compute FFT and keep positive frequencies
+        fft_frame = np.fft.fft(frame)
+        S[:, m] = fft_frame[:n_fft // 2 + 1]
+    
+    return S
+
+# Compare our implementation to librosa
+test_seg = y_sov[sr_sov*30:sr_sov*31]  # 1 second
+S_ours = stft_numpy(test_seg, n_fft=2048, hop_length=512)
+S_librosa = librosa.stft(test_seg, n_fft=2048, hop_length=512)
+
+# Check correlation (won't be exact due to edge handling)
+correlation = np.corrcoef(np.abs(S_ours).flatten(), np.abs(S_librosa).flatten())[0, 1]
+f"Correlation with librosa STFT: {correlation:.6f}"
+```
+
+output:
+
+```
+Correlation with librosa STFT: 0.995549'
+```
+
+## Spectrogram Comparison
+
+A spectrogram is the magnitude of the STFT, typically displayed in decibels on a log-frequency scale.
+
+``` python
+# Generate spectrograms using librosa for both tracks
+fig, axes = plt.subplots(2, 1, figsize=(14, 10))
+
+# Sea of Voices - first 60 seconds
+S_sov = librosa.stft(y_sov[:60*sr_sov])
+S_db_sov = librosa.amplitude_to_db(np.abs(S_sov), ref=np.max)
+
+img1 = librosa.display.specshow(S_db_sov, sr=sr_sov, hop_length=512, 
+                                 x_axis='time', y_axis='log', ax=axes[0], cmap='magma')
+axes[0].set_title('Sea of Voices — Dense harmonic textures, reverberant layers')
+axes[0].set_ylabel('Frequency (Hz)')
+fig.colorbar(img1, ax=axes[0], format='%+2.0f dB')
+
+# Wind Tempos - first 60 seconds
+S_wt = librosa.stft(y_wt[:60*sr_wt])
+S_db_wt = librosa.amplitude_to_db(np.abs(S_wt), ref=np.max)
+
+img2 = librosa.display.specshow(S_db_wt, sr=sr_wt, hop_length=512,
+                                 x_axis='time', y_axis='log', ax=axes[1], cmap='magma')
+axes[1].set_title('Wind Tempos — Clear piano transients, defined attacks')
+axes[1].set_ylabel('Frequency (Hz)')
+axes[1].set_xlabel('Time (seconds)')
+fig.colorbar(img2, ax=axes[1], format='%+2.0f dB')
+
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/spectogram.png" column=1 caption="spectograms comparison" %}
+</div>
+
+## Hearing the Spectogram: Key Moments
+
+The spectrogram reveals structure we can now *hear*:
+- **Sea of Voices @ 0:30** — Notice the dense harmonic buildup visible as bright horizontal bands
+- **Wind Tempos @ 0:40** — Clear piano transients appear as sharp vertical lines
+
+``` python
+# Sea of Voices: Dense harmonic section @ 0:25-0:35
+print("🌊 Sea of Voices — Harmonic buildup (0:25-0:35)")
+print("   Listen for the layered synth textures creating those bright spectral bands")
+audio_excerpt(y_sov, sr_sov, start_sec=25, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/sea-spectogram.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+
+``` python
+# Wind Tempos: Piano transients section @ 0:35-0:45
+print("🍃 Wind Tempos — Piano transients (0:35-0:45)")
+print("   Notice the sharp attacks — these create the vertical lines in the spectrogram")
+audio_excerpt(y_wt, sr_wt, start_sec=35, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/wind-spectogram.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
