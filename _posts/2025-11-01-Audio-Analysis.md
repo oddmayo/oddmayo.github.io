@@ -231,3 +231,110 @@ audio_excerpt(y_wt, sr_wt, start_sec=0, duration_sec=15)
   Your browser does not support the audio element.
 </audio>
 
+# The Fourier Transform
+
+The **Discrete Fourier Transform (DFT)** decomposes a signal into its constituent frequencies. For a signal $$x[n]$$ of length $$N$$:
+
+$$X[k] = \sum_{n=0}^{N-1} x[n] \cdot e^{-i2\pi kn/N}$$
+
+where:
+- $$k$$ is the frequency bin index.
+
+- $$X[k]$$ is a complex number whose magnitude $$\lvert X[k] \rvert$$ gives the amplitude at that frequency.
+
+- The phase $$\angle X[k]$$ gives the phase offset.
+
+## Implementing the DFT
+
+Below we implement the DFT using pure NumPy, then compare to the Fast Fourier Transform (FFT).
+
+``` python
+def dft_naive(x):
+    """
+    Compute the Discrete Fourier Transform (naive O(N²) implementation).
+    
+    DFT formula: X[k] = Σ x[n] * e^(-i*2π*k*n/N) for n=0..N-1
+    
+    Parameters:
+        x: Input signal (1D array)
+    Returns:
+        X: Complex DFT coefficients
+    """
+    N = len(x)
+    n = np.arange(N)
+    k = n.reshape((N, 1))
+    
+    # Create the DFT matrix: each entry is e^(-i*2π*k*n/N)
+    W = np.exp(-2j * np.pi * k * n / N)
+    
+    # Matrix-vector multiplication gives us all DFT coefficients
+    return np.dot(W, x)
+
+# Test on a small segment (FFT is O(N log N), DFT is O(N²))
+test_segment = y_sov[:1024]
+
+# Compare our implementation to NumPy's FFT
+dft_result = dft_naive(test_segment)
+fft_result = np.fft.fft(test_segment)
+
+# Verify they match
+np.allclose(dft_result, fft_result)
+```
+
+output:
+
+``` 
+True
+```
+
+## Frequency Spectrum Visualization
+
+The magnitude spectrum shows which frequencies are present in the audio. We'll analyze a section from each track.
+
+``` python
+def plot_magnitude_spectrum(y, sr, start_sec, duration_sec, title):
+    """Plot the magnitude spectrum of an audio segment."""
+    start_sample = int(start_sec * sr)
+    end_sample = int((start_sec + duration_sec) * sr)
+    segment = y[start_sample:end_sample]
+    
+    # Apply FFT
+    N = len(segment)
+    fft_result = np.fft.fft(segment)
+    
+    # Only positive frequencies (up to Nyquist)
+    freqs = np.fft.fftfreq(N, 1/sr)[:N//2]
+    magnitudes = np.abs(fft_result)[:N//2]
+    
+    # Convert to dB scale
+    magnitudes_db = 20 * np.log10(magnitudes + 1e-10)
+    
+    return freqs, magnitudes_db, title
+
+# Analyze 5-second segments from each track
+fig, axes = plt.subplots(2, 1, figsize=(14, 8))
+
+# Sea of Voices - during the ethereal build
+freqs_sov, mag_sov, _ = plot_magnitude_spectrum(y_sov, sr_sov, 30, 5, "Sea of Voices")
+axes[0].plot(freqs_sov, mag_sov, linewidth=0.5, color='#4A90D9')
+axes[0].set_xlim(0, 10000)
+axes[0].set_xlabel('Frequency (Hz)')
+axes[0].set_ylabel('Magnitude (dB)')
+axes[0].set_title('Sea of Voices (30-35s) — Rich harmonic content from layered synths')
+axes[0].grid(True, alpha=0.3)
+
+# Wind Tempos - piano section
+freqs_wt, mag_wt, _ = plot_magnitude_spectrum(y_wt, sr_wt, 30, 5, "Wind Tempos")
+axes[1].plot(freqs_wt, mag_wt, linewidth=0.5, color='#7AC36A')
+axes[1].set_xlim(0, 10000)
+axes[1].set_xlabel('Frequency (Hz)')
+axes[1].set_ylabel('Magnitude (dB)')
+axes[1].set_title('Wind Tempos (30-35s) — Distinct piano harmonic partials')
+axes[1].grid(True, alpha=0.3)
+
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/frequency-spectrum.png" column=1 caption="frequency spectrum viz" %}
+</div>
