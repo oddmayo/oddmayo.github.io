@@ -213,8 +213,21 @@ The waveform plots illustrate the contrasting dynamics of the two tracks. "Sea o
 ``` python
 # Listen to excerpts
 # Sea of Voices - the vocal build around 30 seconds
-Audio(data=y_sov[25*sr_sov:35*sr_sov], rate=sr_sov)
+audio_excerpt(y_sov, sr_sov, start_sec=25, duration_sec=10)
 ```
 
+<audio controls>
+  <source src="/assets/audio/porter-robinson/sea-wave.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+``` python
 # Wind Tempos - opening piano
-Audio(data=y_wt[0:15*sr_wt], rate=sr_wt)
+audio_excerpt(y_wt, sr_wt, start_sec=0, duration_sec=15)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/wind-wave.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
