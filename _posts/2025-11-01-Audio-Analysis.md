@@ -215,3 +215,6 @@ The waveform plots illustrate the contrasting dynamics of the two tracks. "Sea o
 # Sea of Voices - the vocal build around 30 seconds
 Audio(data=y_sov[25*sr_sov:35*sr_sov], rate=sr_sov)
 ```
+
+# Wind Tempos - opening piano
+Audio(data=y_wt[0:15*sr_wt], rate=sr_wt)
