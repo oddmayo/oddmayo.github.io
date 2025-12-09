@@ -476,3 +476,7 @@ audio_excerpt(y_wt, sr_wt, start_sec=35, duration_sec=10)
   <source src="/assets/audio/porter-robinson/wind-spectogram.wav" type="audio/wav">
   Your browser does not support the audio element.
 </audio>
+
+# Spectral Features
+
+Spectral features summarize properties of the frequency content. These are essential for music information retrieval.
