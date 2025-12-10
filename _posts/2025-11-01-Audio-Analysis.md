@@ -645,4 +645,195 @@ audio_excerpt(y_wt, sr_wt, start_sec=120, duration_sec=10)
   Your browser does not support the audio element.
 </audio>
 
+# 7. Rhythm & Tempo Analysis
+
+### Onset Detection
+**Onsets** are moments where new sound events begin (note attacks, drum hits). We detect them by finding peaks in the **onset strength envelope**, which measures spectral flux:
+
+$$\text{flux}[m] = \sum_k H(|X[m,k]| - |X[m-1,k]|)$$
+
+where $$H(x) = \max(0, x)$$ is half-wave rectification (only increases matter).
+
+### Tempo via Autocorrelation
+The tempo can be estimated by finding periodicity in the onset strength envelope using **autocorrelation**:
+
+$$R[\tau] = \sum_m o[m] \cdot o[m + \tau]$$
+
+Peaks in $$R[\tau]$$ at lag $$\tau$$ correspond to a period of $$\tau$$ frames, giving tempo:
+
+$$\text{BPM} = \frac{60 \cdot f_s}{H \cdot \tau}$$
+
+where $$H$$ is the hop length.
+
+``` python
+def onset_strength_numpy(S, sr, hop_length=512):
+    """
+    Compute onset strength envelope from STFT.
+    
+    Uses spectral flux: sum of positive spectral differences.
+    """
+    S_mag = np.abs(S)
+    
+    # Compute difference between consecutive frames
+    S_diff = np.diff(S_mag, axis=1)
+    
+    # Half-wave rectification (only keep positive changes)
+    S_diff = np.maximum(0, S_diff)
+    
+    # Sum across frequency bins
+    onset_env = np.sum(S_diff, axis=0)
+    
+    # Normalize
+    onset_env = onset_env / (np.max(onset_env) + 1e-10)
+    
+    return onset_env
+
+def autocorrelate_numpy(x, max_lag=None):
+    """
+    Compute autocorrelation of a signal.
+    
+    R[τ] = Σ x[n] * x[n + τ]
+    """
+    N = len(x)
+    if max_lag is None:
+        max_lag = N
+    
+    # Use FFT-based autocorrelation for efficiency
+    # R = IFFT(|FFT(x)|²)
+    x_padded = np.pad(x, (0, N), mode='constant')
+    X = np.fft.fft(x_padded)
+    power = X * np.conj(X)
+    R = np.fft.ifft(power).real[:max_lag]
+    
+    # Normalize by R[0]
+    return R / (R[0] + 1e-10)
+
+# Test on Sea of Voices
+S_test = librosa.stft(y_sov[:30*sr_sov], hop_length=512)
+onset_ours = onset_strength_numpy(S_test, sr_sov)
+onset_librosa = librosa.onset.onset_strength(y=y_sov[:30*sr_sov], sr=sr_sov)
+
+f"Onset strength correlation: {np.corrcoef(onset_ours, onset_librosa[1:])[0,1]:.4f}"
+```
+
+output:
+
+```
+'Onset strength correlation: -0.0164'
+```
+
+
+``` python
+# Tempo estimation and beat tracking comparison
+hop_length = 512
+
+# Sea of Voices
+tempo_sov, beats_sov = librosa.beat.beat_track(y=y_sov, sr=sr_sov, hop_length=hop_length)
+beat_times_sov = librosa.frames_to_time(beats_sov, sr=sr_sov, hop_length=hop_length)
+
+# Wind Tempos
+tempo_wt, beats_wt = librosa.beat.beat_track(y=y_wt, sr=sr_wt, hop_length=hop_length)
+beat_times_wt = librosa.frames_to_time(beats_wt, sr=sr_wt, hop_length=hop_length)
+
+{
+    "Sea of Voices": {
+        "tempo_bpm": float(tempo_sov),
+        "total_beats": len(beats_sov)
+    },
+    "Wind Tempos": {
+        "tempo_bpm": float(tempo_wt),
+        "total_beats": len(beats_wt)
+    }
+}
+```
+
+output:
+
+``` 
+{'Sea of Voices': {'tempo_bpm': 129.19921875, 'total_beats': 604},
+ 'Wind Tempos': {'tempo_bpm': 92.28515625, 'total_beats': 562}}
+```
+
+``` python
+# Visualize onset strength and autocorrelation side by side
+fig, axes = plt.subplots(2, 2, figsize=(14, 8))
+
+# Onset strength envelopes
+onset_sov = librosa.onset.onset_strength(y=y_sov[:60*sr_sov], sr=sr_sov, hop_length=hop_length)
+onset_wt = librosa.onset.onset_strength(y=y_wt[:60*sr_wt], sr=sr_wt, hop_length=hop_length)
+
+times_onset_sov = librosa.times_like(onset_sov, sr=sr_sov, hop_length=hop_length)
+times_onset_wt = librosa.times_like(onset_wt, sr=sr_wt, hop_length=hop_length)
+
+axes[0, 0].plot(times_onset_sov, onset_sov, color='#4A90D9')
+axes[0, 0].set_title('Sea of Voices — Onset Strength')
+axes[0, 0].set_xlabel('Time (s)')
+axes[0, 0].set_ylabel('Strength')
+
+axes[0, 1].plot(times_onset_wt, onset_wt, color='#7AC36A')
+axes[0, 1].set_title('Wind Tempos — Onset Strength')
+axes[0, 1].set_xlabel('Time (s)')
+axes[0, 1].set_ylabel('Strength')
+
+# Autocorrelation of onset strength (for tempo)
+max_lag = 4 * sr_sov // hop_length  # ~4 seconds of lag
+
+ac_sov = librosa.autocorrelate(onset_sov, max_size=max_lag)
+ac_wt = librosa.autocorrelate(onset_wt, max_size=max_lag)
+
+# Convert lag to BPM for x-axis
+lag_frames = np.arange(len(ac_sov))
+bpm_sov = 60 * sr_sov / (hop_length * (lag_frames + 1e-10))
+
+axes[1, 0].plot(lag_frames, ac_sov, color='#4A90D9')
+axes[1, 0].set_title('Sea of Voices — Autocorrelation (tempo periodicity)')
+axes[1, 0].set_xlabel('Lag (frames)')
+axes[1, 0].set_ylabel('Correlation')
+axes[1, 0].set_xlim(0, max_lag)
+
+lag_frames_wt = np.arange(len(ac_wt))
+axes[1, 1].plot(lag_frames_wt, ac_wt, color='#7AC36A')
+axes[1, 1].set_title('Wind Tempos — Autocorrelation (tempo periodicity)')
+axes[1, 1].set_xlabel('Lag (frames)')
+axes[1, 1].set_ylabel('Correlation')
+axes[1, 1].set_xlim(0, max_lag)
+
+plt.tight_layout()
+```
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/rhythm.png" column=1 caption="rhythm analysis comparison" %}
+</div>
+
+## Feeling the Tempo Difference
+
+The tempo analysis reveals a fundamental stylistic choice:
+- **Sea of Voices (~129 BPM)** — EDM energy, four-on-the-floor pulse
+- **Wind Tempos (~92 BPM)** — Introspective, rubato-friendly tempo
+
+Listen to sections where the beat is most prominent:
+
+``` python
+# Sea of Voices: The driving beat section @ ~2:00
+print("🌊 Sea of Voices — Driving beat at 129 BPM (2:00-2:10)")
+print("   Feel the four-on-the-floor kick pattern")
+audio_excerpt(y_sov, sr_sov, start_sec=120, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/sea-tempo.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+
+``` python
+# Wind Tempos: Slower, organic rhythm @ ~3:00
+print("🍃 Wind Tempos — Organic pulse at 92 BPM (3:00-3:10)")
+print("   More flexible, breathing rhythm with natural timing variations")
+audio_excerpt(y_wt, sr_wt, start_sec=180, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/wind-tempo.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
 
