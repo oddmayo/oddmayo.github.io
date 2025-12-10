@@ -837,3 +837,106 @@ audio_excerpt(y_wt, sr_wt, start_sec=180, duration_sec=10)
   Your browser does not support the audio element.
 </audio>
 
+
+# 8. Chromogram: Harmonic Content
+
+A **chromagram** (or chroma feature) represents the energy distribution across the 12 pitch classes (C, C#, D, ..., B), regardless of octave. This captures harmonic and melodic content.
+
+The chroma vector at frame $$m$$ is:
+
+$$c_p[m] = \sum_{k \in \text{bins}(p)} |X[m, k]|^2$$
+
+where $$\text{bins}(p)$$ are the frequency bins corresponding to pitch class $$p$$ across all octaves.
+
+### Musical Context
+- **Sea of Voices**: Built around lush major chords with emotional progressions.
+- **Wind Tempos**: More modal, with hints of Japanese pentatonic influence.
+
+``` python
+# Compute and visualize chromagrams
+fig, axes = plt.subplots(2, 1, figsize=(14, 8))
+
+# Sea of Voices chromagram (using CQT for better frequency resolution)
+chroma_sov = librosa.feature.chroma_cqt(y=y_sov[:60*sr_sov], sr=sr_sov, hop_length=512)
+img1 = librosa.display.specshow(chroma_sov, sr=sr_sov, hop_length=512, 
+                                 x_axis='time', y_axis='chroma', ax=axes[0], cmap='coolwarm')
+axes[0].set_title('Sea of Voices — Chromagram (harmonic content over time)')
+fig.colorbar(img1, ax=axes[0])
+
+# Wind Tempos chromagram
+chroma_wt = librosa.feature.chroma_cqt(y=y_wt[:60*sr_wt], sr=sr_wt, hop_length=512)
+img2 = librosa.display.specshow(chroma_wt, sr=sr_wt, hop_length=512,
+                                 x_axis='time', y_axis='chroma', ax=axes[1], cmap='coolwarm')
+axes[1].set_title('Wind Tempos — Chromagram (harmonic content over time)')
+axes[1].set_xlabel('Time (seconds)')
+fig.colorbar(img2, ax=axes[1])
+
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/chromagram.png" column=1 caption="chromagram comparison" %}
+</div>
+
+
+``` python
+# Average chroma distribution — which notes dominate each track?
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+pitch_classes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+# Mean chroma across time
+mean_chroma_sov = np.mean(chroma_sov, axis=1)
+mean_chroma_wt = np.mean(chroma_wt, axis=1)
+
+axes[0].bar(pitch_classes, mean_chroma_sov, color='#4A90D9', alpha=0.8)
+axes[0].set_title('Sea of Voices — Average Chroma Distribution')
+axes[0].set_ylabel('Energy')
+axes[0].set_xlabel('Pitch Class')
+
+axes[1].bar(pitch_classes, mean_chroma_wt, color='#7AC36A', alpha=0.8)
+axes[1].set_title('Wind Tempos — Average Chroma Distribution')
+axes[1].set_ylabel('Energy')
+axes[1].set_xlabel('Pitch Class')
+
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/average-chroma.png" column=1 caption="average chroma distribution" %}
+</div>
+
+## Hearing the Harmony: Key Center Differences
+
+The chromagram shows that these tracks live in different harmonic worlds:
+- **Sea of Voices**: Strong D, G, A — suggests D major / G major territory
+- **Wind Tempos**: Strong C#, D#, G# — suggests more complex, melancholic modes
+
+Listen to passages where the harmonic character shines through:
+
+``` python
+# Sea of Voices: The soaring chord progression @ ~3:00
+print("🌊 Sea of Voices — Soaring harmonies in D/G major (3:00-3:12)")
+print("   Listen for the uplifting, anthemic chord movement")
+audio_excerpt(y_sov, sr_sov, start_sec=180, duration_sec=12)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/sea-chords.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+``` python
+# Wind Tempos: Melancholic harmonic passage @ ~4:00
+print("🍃 Wind Tempos — Melancholic piano in C#/G# minor (4:00-4:12)")
+print("   Notice the more introspective, bittersweet quality")
+audio_excerpt(y_wt, sr_wt, start_sec=240, duration_sec=12)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/wind-chords.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+
+
