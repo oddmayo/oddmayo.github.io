@@ -36,7 +36,7 @@ You can download the code from this post here: [oddmayo/crawl4ai-resources](http
 
 
 
-# Setup
+# 1. Setup
 
 We're going to use old reliable Ollama. First, we need to install it in our system. Consider using vLLM as well.
 
@@ -117,7 +117,7 @@ Since we are working in a notebook, the following command is neccessary to allow
 nest_asyncio.apply()
 ```
 
-# Basic Web Scraping
+# 2. Basic Web Scraping
 
 This is the example provided in the Docs, briefly explained: We need to define both a browser and a crawler run configuration for the Crawler. We will focus on single URL extraction with the `arun()` method, but be sure to check out [`arun_many()`](https://docs.crawl4ai.com/api/arun_many/) (multiple request may require a proxy for large-scale scraping).
 
@@ -189,7 +189,7 @@ Crawl4AI takes care of a lot of things in the background (browser headers, captc
 
 The output is pretty standard; the HTML is converted into Markdown so any LLM can read it. If you want to extract specific elements you can use any of the [LLM-Free Strategies](https://docs.crawl4ai.com/extraction/no-llm-strategies/), but we are going in the opposite direction.
 
-# Scraping with Local LLM
+# 3. Scraping with Local LLM
 
 For this task I'm going to use Qwen2.5:3b, a pretty well know model for fast data extraction. You should check the list of [models](https://ollama.com/search) in Ollama and their task rankings in [Hugging Face 🤗](https://huggingface.co/models).
 
@@ -484,7 +484,7 @@ That took longer than the previous ones. If you look closely, you'll notice that
 
 You could overcome this by fine-tuning to ensure the consistent extraction of the desired elements of the main product. However, for lazy purposes, let's give Amazon the win this time. The other extraction strategies would complete the task without any problems in this case.
 
-# Where LLMs Shine
+# 4. Where LLMs Shine
 
 Using an LLM for scraping requires targeting the right websites. For example, target websites that constantly change with lots of text. Let's request a summary of this Harvard master's program.
 
@@ -570,6 +570,6 @@ m/#program-overview  | ✓ | ⏱: 5.73s
 
 There we go — consistent, lazy scraping, taking advantage of modern tools.
 
-# Concluding Remarks
+# 5. Concluding Remarks
 
  I've always considered web scraping to be a boring task, but the tools for the job have improved so much over time that, nowadays, with libraries like this one and AI, extracting web data has become fun and challenging (including the competitor data you crave). Plus, you can do it with far fewer lines of code than with traditional tools like Selenium, which feels refreshing. Be sure to explore the other strategies and capabilities of the Crawl4AI library!
