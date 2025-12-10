@@ -49,7 +49,7 @@ You can download the code from this post here: [oddmayo/audio-analysis](https://
 
 **requirements:** \
 
-# Setup and Loading
+# 1. Setup and Loading
 
 ``` python
 import numpy as np
@@ -99,7 +99,7 @@ output:
 The durations are approximately 5 minutes for "Sea of Voices" and just over 6 minutes for "Wind Tempos".
 
 
-# First Listen: Opening Atmospheres
+## First Listen: Opening Atmospheres
 
 Before diving into analysis, let's hear how each track opens. Notices the contrast:
 
@@ -128,7 +128,7 @@ audio_excerpt(y_wt, sr_wt, start_sec=5, duration_sec=10)
 
 The opening of "Sea of Voices" is characterized by a lush, evolving pad sound that creates an immersive atmosphere, while "Wind Tempos" introduces a more immediate and melodic piano motif that sets a different emotional tone.
 
-# Understanding Digital Audio
+# 2. Understanding Digital Audio
 
 Digital audio represents continuous sound waves as discrete samples.
 
@@ -176,7 +176,7 @@ plt.tight_layout()
 
 The plot shows the first 100 samples of "Sea of Voices". Each stem represents the amplitude at that sample index. The waveform oscillates around zero, indicating positive and negative air pressure variations.
 
-# Waveform Visualization
+# 3. Waveform Visualization
 
 The waveform shows amplitude over time. It reveals the overall dynamic structure of a track:
 - **Sea of Voices**: Gradual builds with atmospheric, sustained layers
@@ -231,7 +231,7 @@ audio_excerpt(y_wt, sr_wt, start_sec=0, duration_sec=15)
   Your browser does not support the audio element.
 </audio>
 
-# The Fourier Transform
+# 4. The Fourier Transform
 
 The **Discrete Fourier Transform (DFT)** decomposes a signal into its constituent frequencies. For a signal $$x[n]$$ of length $$N$$:
 
@@ -339,7 +339,7 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/frequency-spectrum.png" column=1 caption="frequency spectrum viz" %}
 </div>
 
-# Spectrograms: Time-Frequency Analysis
+# 5. Spectrograms: Time-Frequency Analysis
 
 The **Short-Time Fourier Transform (STFT)** applies the DFT to overlapping windows of the signal, producing a time-frequency representation.
 
@@ -477,6 +477,172 @@ audio_excerpt(y_wt, sr_wt, start_sec=35, duration_sec=10)
   Your browser does not support the audio element.
 </audio>
 
-# Spectral Features
+# 6. Spectral Features
 
 Spectral features summarize properties of the frequency content. These are essential for music information retrieval.
+
+### Spectral Centroid
+The "center of mass" of the spectrum — indicates the "brightness" of a sound:
+
+$$\text{centroid} = \frac{\sum_k f_k \cdot |X[k]|}{\sum_k |X[k]|}$$
+
+### Spectral Rolloff
+The frequency below which a specified percentage (e.g., 85%) of the spectral energy is contained.
+
+### Zero-Crossing Rate
+How often the signal crosses zero — rough proxy for "noisiness" vs tonal content:
+
+$$\text{ZCR} = \frac{1}{2(N-1)} \sum_{n=1}^{N-1} |\text{sign}(x[n]) - \text{sign}(x[n-1])|$$
+
+``` python
+def spectral_centroid_numpy(S, sr, n_fft=2048):
+    """
+    Compute spectral centroid from STFT magnitude.
+    
+    centroid = Σ(f_k * |X[k]|) / Σ(|X[k]|)
+    """
+    # Frequency bins
+    freqs = np.fft.rfftfreq(n_fft, 1/sr)
+    
+    # Ensure S is magnitude (not complex)
+    S_mag = np.abs(S)
+    
+    # Weighted mean frequency per frame
+    centroid = np.sum(freqs[:, np.newaxis] * S_mag, axis=0) / (np.sum(S_mag, axis=0) + 1e-10)
+    return centroid
+
+def zero_crossing_rate_numpy(y, frame_length=2048, hop_length=512):
+    """
+    Compute zero-crossing rate per frame.
+    
+    ZCR = (1/2(N-1)) * Σ|sign(x[n]) - sign(x[n-1])|
+    """
+    # Pad signal
+    pad_length = frame_length // 2
+    y_padded = np.pad(y, (pad_length, pad_length), mode='edge')
+    
+    n_frames = 1 + (len(y_padded) - frame_length) // hop_length
+    zcr = np.zeros(n_frames)
+    
+    for i in range(n_frames):
+        start = i * hop_length
+        frame = y_padded[start:start + frame_length]
+        
+        # Count sign changes
+        signs = np.sign(frame)
+        zcr[i] = np.sum(np.abs(np.diff(signs))) / (2 * (frame_length - 1))
+    
+    return zcr
+
+# Compare our implementations to librosa
+S_test = librosa.stft(y_sov[:5*sr_sov])
+centroid_ours = spectral_centroid_numpy(S_test, sr_sov)
+centroid_librosa = librosa.feature.spectral_centroid(S=np.abs(S_test), sr=sr_sov)[0]
+
+zcr_ours = zero_crossing_rate_numpy(y_sov[:5*sr_sov])
+zcr_librosa = librosa.feature.zero_crossing_rate(y_sov[:5*sr_sov], frame_length=2048, hop_length=512)[0]
+
+{
+    "centroid_correlation": np.corrcoef(centroid_ours, centroid_librosa)[0, 1],
+    "zcr_correlation": np.corrcoef(zcr_ours[:len(zcr_librosa)], zcr_librosa)[0, 1]
+}
+```
+
+output:
+
+``` 
+{'centroid_correlation': 0.9999999999999349,
+ 'zcr_correlation': 0.999853726198455}
+```
+
+## Feature Comparison
+
+Let's compare spectral features between the two tracks to understand their timbral differences.
+
+``` python
+# Compare spectral features between both tracks
+fig, axes = plt.subplots(3, 1, figsize=(14, 10), sharex=False)
+
+# Compute features for both tracks (first 60 seconds)
+S_sov_feat = librosa.stft(y_sov[:60*sr_sov])
+S_wt_feat = librosa.stft(y_wt[:60*sr_wt])
+
+# Spectral Centroid
+centroid_sov = librosa.feature.spectral_centroid(S=np.abs(S_sov_feat), sr=sr_sov)[0]
+centroid_wt = librosa.feature.spectral_centroid(S=np.abs(S_wt_feat), sr=sr_wt)[0]
+
+times_sov = librosa.times_like(centroid_sov, sr=sr_sov)
+times_wt = librosa.times_like(centroid_wt, sr=sr_wt)
+
+axes[0].plot(times_sov, centroid_sov, label='Sea of Voices', color='#4A90D9', alpha=0.8)
+axes[0].plot(times_wt, centroid_wt, label='Wind Tempos', color='#7AC36A', alpha=0.8)
+axes[0].set_ylabel('Frequency (Hz)')
+axes[0].set_title('Spectral Centroid — Perceived "brightness"')
+axes[0].legend()
+axes[0].grid(True, alpha=0.3)
+
+# Spectral Rolloff
+rolloff_sov = librosa.feature.spectral_rolloff(S=np.abs(S_sov_feat), sr=sr_sov, roll_percent=0.85)[0]
+rolloff_wt = librosa.feature.spectral_rolloff(S=np.abs(S_wt_feat), sr=sr_wt, roll_percent=0.85)[0]
+
+axes[1].plot(times_sov, rolloff_sov, label='Sea of Voices', color='#4A90D9', alpha=0.8)
+axes[1].plot(times_wt, rolloff_wt, label='Wind Tempos', color='#7AC36A', alpha=0.8)
+axes[1].set_ylabel('Frequency (Hz)')
+axes[1].set_title('Spectral Rolloff (85%) — Upper frequency boundary')
+axes[1].legend()
+axes[1].grid(True, alpha=0.3)
+
+# Zero-Crossing Rate
+zcr_sov = librosa.feature.zero_crossing_rate(y_sov[:60*sr_sov])[0]
+zcr_wt = librosa.feature.zero_crossing_rate(y_wt[:60*sr_wt])[0]
+
+times_zcr_sov = librosa.times_like(zcr_sov, sr=sr_sov)
+times_zcr_wt = librosa.times_like(zcr_wt, sr=sr_wt)
+
+axes[2].plot(times_zcr_sov, zcr_sov, label='Sea of Voices', color='#4A90D9', alpha=0.8)
+axes[2].plot(times_zcr_wt, zcr_wt, label='Wind Tempos', color='#7AC36A', alpha=0.8)
+axes[2].set_xlabel('Time (seconds)')
+axes[2].set_ylabel('ZCR')
+axes[2].set_title('Zero-Crossing Rate — Noisiness/texture indicator')
+axes[2].legend()
+axes[2].grid(True, alpha=0.3)
+
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/spectral.png" column=1 caption="spectral features comparison" %}
+</div>
+
+## Hearing Spectral Brightness
+
+The spectral centroid (perceived "brightness") shows interesting contrasts. Let's hear moments where each track reaches peak brightness:
+
+- **Sea of Voices @ ~1:30** — The "drop" with maximum high-frequency energy
+- **Wind Tempos @ ~2:00** — Intense piano crescendo with bright upper harmonics
+
+``` python
+# Sea of Voices: The euphoric drop section @ ~1:25
+print("🌊 Sea of Voices — First drop / climax (1:25-1:35)")
+print("   Maximum spectral brightness — all those shimmering synth layers!")
+audio_excerpt(y_sov, sr_sov, start_sec=85, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/sea-spectral.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+``` python
+# Wind Tempos: Emotional crescendo @ ~2:00
+print("🍃 Wind Tempos — Piano crescendo (2:00-2:10)")
+print("   Bright upper harmonics as the intensity builds")
+audio_excerpt(y_wt, sr_wt, start_sec=120, duration_sec=10)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/wind-spectral.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+
