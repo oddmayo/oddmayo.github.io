@@ -33,7 +33,7 @@ We'll compare two tracks from Porter Robinson discography:
   {% include aligner.html images="posts/audio/nurture.png" column=1 caption="Nurture album cover" %}
 </div>
 
-There is a great library called [librosa](https://librosa.org/doc/latest/index.html) for this sort of analysis, and while it would be easy to just use it calling just calling functions, I wanted to understand the math behind it. That's why we'll implement the algorithms from scratch using NumPy where possible, with mathematical explanations, while using librosa for loading and validation.
+There is a great library called [librosa](https://librosa.org/doc/latest/index.html) for this sort of analysis, and while it would be easy to just use it calling functions, I wanted to understand the math behind it. That's why we'll implement the algorithms from scratch using NumPy where possible, with mathematical explanations, while using librosa for loading and validation.
 
 **CONTENTS:**
 
