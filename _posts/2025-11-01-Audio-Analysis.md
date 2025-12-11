@@ -939,4 +939,144 @@ audio_excerpt(y_wt, sr_wt, start_sec=240, duration_sec=12)
 </audio>
 
 
+# 9. Mel-Frequency Cepstral Coefficients (MFCCs)
+
+MFCCs are a compact representation of the spectral envelope, widely used in speech and music analysis. The pipeline:
+
+1. **Mel spectrogram**: Apply mel-scale filterbank to power spectrum
+
+   $$S_{mel}[m, b] = \sum_k |X[m,k]|^2 \cdot H_b[k]$$
+   
+2. **Log compression**: $$\log(S_{mel} + \epsilon)$$
+
+3. **DCT**: Discrete Cosine Transform decorrelates the mel bands
+
+   $$c_n = \sum_{b=0}^{B-1} \log(S_{mel}[b]) \cdot \cos\left(\frac{\pi n (b + 0.5)}{B}\right)$$
+
+The first ~13 coefficients capture timbral characteristics.
+
+``` python
+def mel_filterbank_numpy(sr, n_fft, n_mels=128, fmin=0, fmax=None):
+    """
+    Create a Mel filterbank matrix.
+    
+    The Mel scale approximates human pitch perception:
+    mel = 2595 * log10(1 + f/700)
+    """
+    if fmax is None:
+        fmax = sr / 2
+    
+    # Mel scale conversion
+    def hz_to_mel(f):
+        return 2595 * np.log10(1 + f / 700)
+    
+    def mel_to_hz(m):
+        return 700 * (10**(m / 2595) - 1)
+    
+    # Create mel points
+    mel_min = hz_to_mel(fmin)
+    mel_max = hz_to_mel(fmax)
+    mel_points = np.linspace(mel_min, mel_max, n_mels + 2)
+    hz_points = mel_to_hz(mel_points)
+    
+    # Convert to FFT bin indices
+    bin_points = np.floor((n_fft + 1) * hz_points / sr).astype(int)
+    
+    # Create filterbank
+    filterbank = np.zeros((n_mels, n_fft // 2 + 1))
+    
+    for m in range(1, n_mels + 1):
+        left = bin_points[m - 1]
+        center = bin_points[m]
+        right = bin_points[m + 1]
+        
+        # Rising slope
+        for k in range(left, center):
+            filterbank[m - 1, k] = (k - left) / (center - left + 1e-10)
+        
+        # Falling slope
+        for k in range(center, right):
+            filterbank[m - 1, k] = (right - k) / (right - center + 1e-10)
+    
+    return filterbank
+
+# Visualize the mel filterbank
+mel_fb = mel_filterbank_numpy(sr_sov, 2048, n_mels=40)
+freqs = np.fft.rfftfreq(2048, 1/sr_sov)
+
+plt.figure(figsize=(12, 4))
+for i in range(0, 40, 4):  # Plot every 4th filter
+    plt.plot(freqs, mel_fb[i], alpha=0.7)
+plt.xlabel('Frequency (Hz)')
+plt.ylabel('Weight')
+plt.title('Mel Filterbank — Triangular filters on mel-scale spacing')
+plt.xlim(0, 8000)
+plt.grid(True, alpha=0.3)
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/mel-filterbank.png" column=1 caption="mel filterbank visualization" %}
+</div>
+
+
+``` python
+# Compare MFCCs between tracks
+fig, axes = plt.subplots(2, 1, figsize=(14, 8))
+
+# Compute MFCCs
+mfcc_sov = librosa.feature.mfcc(y=y_sov[:60*sr_sov], sr=sr_sov, n_mfcc=13, hop_length=512)
+mfcc_wt = librosa.feature.mfcc(y=y_wt[:60*sr_wt], sr=sr_wt, n_mfcc=13, hop_length=512)
+
+img1 = librosa.display.specshow(mfcc_sov, sr=sr_sov, hop_length=512,
+                                 x_axis='time', ax=axes[0], cmap='coolwarm')
+axes[0].set_title('Sea of Voices — MFCCs (timbral fingerprint)')
+axes[0].set_ylabel('MFCC Coefficient')
+fig.colorbar(img1, ax=axes[0])
+
+img2 = librosa.display.specshow(mfcc_wt, sr=sr_wt, hop_length=512,
+                                 x_axis='time', ax=axes[1], cmap='coolwarm')
+axes[1].set_title('Wind Tempos — MFCCs (timbral fingerprint)')
+axes[1].set_ylabel('MFCC Coefficient')
+axes[1].set_xlabel('Time (seconds)')
+fig.colorbar(img2, ax=axes[1])
+
+plt.tight_layout()
+```
+
+<div style="max-width:1000px; margin:auto;">
+  {% include aligner.html images="posts/audio/mfcc.png" column=1 caption="mfcc comparison" %}
+</div>
+
+## The Climax: Peak Emotional Moments
+
+Every great track builds to something transcendent. These are the moments where all the analysis converges — maximum spectral energy, strongest harmonic content, and most intense rhythmic drive:
+
+``` python
+# Sea of Voices: The transcendent climax @ ~3:45
+print("🌊 Sea of Voices — CLIMAX: The Transcendent Drop (3:45-4:00)")
+print("   ✨ Maximum spectral brightness")
+print("   ✨ Full harmonic saturation")  
+print("   ✨ Peak emotional intensity")
+print("   This is the moment the spectrogram LIGHTS UP")
+audio_excerpt(y_sov, sr_sov, start_sec=225, duration_sec=15)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/sea-climax.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
+
+``` python
+# Wind Tempos: The emotional resolution @ ~5:00
+print("🍃 Wind Tempos — CLIMAX: Emotional Release (5:00-5:15)")
+print("   🌿 Rich lower harmonics")
+print("   🌿 Sustained melodic resolution")
+print("   🌿 The satisfying conclusion the MFCC patterns predicted")
+audio_excerpt(y_wt, sr_wt, start_sec=300, duration_sec=15)
+```
+
+<audio controls>
+  <source src="/assets/audio/porter-robinson/wind-climax.wav" type="audio/wav">
+  Your browser does not support the audio element.
+</audio>
 
