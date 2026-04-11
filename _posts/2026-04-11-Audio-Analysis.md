@@ -15,7 +15,7 @@ mathjax: true
 
 In this post I'll explain the fundamentals of audio signal processing from what I've learned about [Music Information Retrieval (MIR)](https://musicinformationretrieval.com/content/1_introduction/why_mir.html). Audio analysis is something I have always wanted to do but never really got around to it. First because it looked hard, and second I've never really come across data in audio format during my data scientist career.
 
-I can't say that I 'grew up' listening to Porter Robinson, but it's been a while. First time I heard his music was while playing the first Forza Horizon back in 2012 and thought it was pretty cool but didn't think much about it. Later on with the years, I noticed drastic change of styles through the albums, from your typical EDM to more emotional and melodic compositions.
+I can't say that I 'grew up' listening to Porter Robinson, but it's been a while. First time I heard his music was while playing the first Forza Horizon back in 2012 and thought it was pretty cool but didn't think much about it. Later on with the years I noticed drastic change of styles through the albums, from your typical EDM to more emotional and melodic compositions.
 
 We'll compare two tracks from Porter Robinson discography:
 
@@ -60,10 +60,11 @@ import librosa.display
 
 ## Load Audio Files
 
-We use librosa to load the data, in my case I have FLAC files from my purchased albums but you can load MP3 or WAV files as well. Setting `sr=None` preserves the native sample rate (typically 44100 Hz for CD-quality audio).
+Let's use librosa to load the data, in my case I have FLAC files from my purchased albums but you can load MP3 or WAV files as well. Setting `sr=None` preserves the native sample rate (typically 44100 Hz for CD-quality audio).
 
 ``` python
 # Load audio files
+
 # Load Sea of Voices
 filename_sov = str(Path('flacs') / 'sea-of-voices.flac')
 y_sov, sr_sov = librosa.load(filename_sov, sr=None)
@@ -94,8 +95,7 @@ output:
   'sample_rate': 44100} }
 ```
 
-The durations are approximately 5 minutes for "Sea of Voices" and just over 6 minutes for "Wind Tempos".
-
+The durations are around 5 minutes for 'Sea of Voices' and just over 6 minutes for 'Wind Tempos'.
 
 ## First Listen: Opening Atmospheres
 

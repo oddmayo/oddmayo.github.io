@@ -178,4 +178,84 @@ header {
       filter: saturate(0.7);
     }
   }
+
+  /* Table of Contents */
+  #markdown-toc {
+    position: fixed;
+    top: 5rem;
+    left: 0.5%;
+    width: 15%;
+    max-height: calc(100vh - 10rem);
+    overflow-y: auto;
+    font-size: 0.85em;
+    background: var(--background);
+    border: 1px solid var(--border);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    list-style: none;
+    margin: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+
+    /* Add a modern title to the top of the box */
+    &::before {
+      content: "IN THIS POST";
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: bold;
+      color: var(--h3);
+      font-size: 0.9em;
+      display: block;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Style the nested lists */
+    ul {
+      list-style: none;
+      padding-left: 1rem;
+      margin-top: 0.5rem;
+      border-left: 1px solid var(--border);
+    }
+
+    li {
+      margin-bottom: 0.8rem;
+      
+      a {
+        color: var(--meta);
+        text-decoration: none;
+        transition: all 0.2s;
+        display: block;
+
+        &:hover {
+          color: var(--link);
+        }
+
+        &.active-toc {
+          color: var(--link);
+          font-weight: bold;
+          transform: translateX(4px); /* Slight bump to the right when active */
+        }
+      }
+    }
+
+    /* Fallback for smaller screens: revert to standard inline list instead of floating */
+    @media screen and (max-width: 1400px) {
+      position: static;
+      width: 100%;
+      max-height: none;
+      box-shadow: none;
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--h3);
+      background: var(--blockquote);
+      margin: 2rem 0;
+      padding: 1.5rem;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+    }
+  }
 }

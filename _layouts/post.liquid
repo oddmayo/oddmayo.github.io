@@ -28,4 +28,92 @@ layout: default
 
 </article>
 
+<!-- Back to top button -->
+<button id="back-to-top" title="Go to top"><i class="fa fa-chevron-up"></i></button>
+
+<script>
+    // Get the button
+    var mybutton = document.getElementById("back-to-top");
+
+    // When the user scrolls down 200px from the top of the document, show the button
+    window.onscroll = function() {scrollFunction()};
+
+    function scrollFunction() {
+        if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) {
+            mybutton.style.display = "block";
+        } else {
+            mybutton.style.display = "none";
+        }
+    }
+
+    <!-- When the user clicks on the button, scroll to the top of the document -->
+    mybutton.onclick = function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    <!-- TOC Active Synchronization -->
+    document.addEventListener("DOMContentLoaded", function() {
+        const tocLinks = document.querySelectorAll('#markdown-toc a');
+        if (tocLinks.length === 0) return;
+        
+        // Find the matching headings in the document
+        const headings = Array.from(tocLinks).map(link => {
+            // Extract id from href="#some-id"
+            const href = link.getAttribute('href');
+            if (href && href.startsWith('#')) {
+                return document.getElementById(href.substring(1));
+            }
+            return null;
+        }).filter(h => h !== null);
+        
+        const tocContainer = document.getElementById('markdown-toc');
+        
+        function syncToc() {
+            let activeIndex = -1;
+            const scrollPos = window.scrollY || document.documentElement.scrollTop;
+            const offset = 150; // pixels to offset the scroll trigger
+            
+            for (let i = 0; i < headings.length; i++) {
+                if (headings[i].offsetTop - offset <= scrollPos) {
+                    activeIndex = i;
+                }
+            }
+            
+            if (window.innerWidth > 1400) {
+                if (activeIndex === -1 && scrollPos < (headings[0].offsetTop - offset - 100)) {
+                    // Hide TOC before reaching the first heading
+                    tocContainer.style.opacity = '0';
+                    tocContainer.style.pointerEvents = 'none';
+                } else {
+                    // Show TOC once the first heading comes into view
+                    tocContainer.style.opacity = '1';
+                    tocContainer.style.pointerEvents = 'auto';
+                }
+            }
+
+            tocLinks.forEach((link, index) => {
+                if (index === activeIndex) {
+                    link.classList.add('active-toc');
+                    
+                    // Keep active item in view inside the TOC container
+                    const linkTop = link.offsetTop;
+                    const containerHeight = tocContainer.clientHeight;
+                    const scrollBoundsTop = tocContainer.scrollTop;
+                    const scrollBoundsBottom = scrollBoundsTop + containerHeight;
+                    
+                    if (linkTop < scrollBoundsTop || linkTop > scrollBoundsBottom) {
+                        tocContainer.scrollTop = linkTop - (containerHeight / 2);
+                    }
+                } else {
+                    link.classList.remove('active-toc');
+                }
+            });
+        }
+        
+        // Use passive event listener for better scrolling performance
+        window.addEventListener('scroll', syncToc, { passive: true });
+        syncToc(); // Run on init
+    });
+</script>
+
 {% include blog/post_footer.liquid color=page.color img=page.feature-img %}
