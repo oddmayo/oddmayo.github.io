@@ -99,7 +99,7 @@ The durations are around 5 minutes for 'Sea of Voices' and just over 6 minutes f
 
 ## First Listen: Opening Atmospheres
 
-Before diving into analysis, let's hear how each track opens. Notices the contrast:
+Before diving into analysis, let's hear how each track opens. Notice the contrast:
 
 ``` python
 # Sea of Voices: Opening 10 seconds — ethereal pad entrance
@@ -114,7 +114,7 @@ audio_excerpt(y_sov, sr_sov, start_sec=0, duration_sec=10)
 
 
 ``` python
-# Wind Tempos: First piano entrance around 0:08
+# Wind Tempos: First piano entrance
 print("🍃 Wind Tempos — First piano notes (0:05-0:15)")
 audio_excerpt(y_wt, sr_wt, start_sec=5, duration_sec=10)
 ```
@@ -132,11 +132,11 @@ Digital audio represents continuous sound waves as discrete samples. Think of di
 
 ## Sample Rate (fs)
 
-The **sample rate** determines how many times per second the audio signal is measured. By the **Nyquist theorem**, to accurately capture a frequency $$f$$, we need a sample rate of at least $$2f$$:
+The **sample rate** determines how many times per second the audio signal is measured. By the [**Nyquist theorem**](https://en.wikipedia.org/wiki/Nyquist%E2%80%93Shannon_sampling_theorem), to accurately capture the highest frequency present in our sound ($$f_{max}$$), our sample rate ($$f_s$$) must be at least **twice** that frequency ($$2 \times f_{max}$$). Why? Because catching one high point and one low point of a sound wave is the bare minimum required to recreate it:
 
 $$f_s \geq 2f_{max}$$
 
-Since human hearing ranges up to ~20 kHz, CD-quality audio uses 44.1 kHz (or 48 kHz for video). In real-world applications, choosing the right sample rate is about balancing audio quality with file size—this is why phone calls (which only need to capture voice) use a much lower sample rate of 8 kHz, sounding noticeably more "muffled."
+Since human hearing tops out around ~20 kHz (meaning 20,000 vibrations per second), the Nyquist theorem says our sampling equipment needs to run at double that speed—at least 40 kHz. This is exactly why CD-quality audio was standardized at 44.1 kHz (or 48 kHz for video). In real-world applications, choosing the right sample rate is about balancing audio quality with file size—this is why phone calls (which only need to capture the lower frequencies of human voice) use a much lower sample rate of 8 kHz, sounding noticeably more "muffled."
 
 ## Amplitude
 
@@ -177,8 +177,8 @@ The plot shows the first 100 samples of "Sea of Voices". Each stem represents th
 # 3. Waveform Visualization
 
 The waveform shows amplitude over time. It reveals the overall dynamic structure of a track:
-- **Sea of Voices**: Gradual builds with atmospheric, sustained layers
-- **Wind Tempos**: More percussive attacks with piano transients
+- **Sea of Voices**: Gradual builds with atmospheric, sustained layers.
+- **Wind Tempos**: More percussive attacks with [piano transients.](https://majormixing.com/what-are-transients/#:~:text=Transient%20compression%20is%20a%20technique%20used%20to,parallel%20compression%20processing%20*%20Use%20multiband%20compression)
 
 ``` python
 # Compare full waveforms side by side
@@ -233,16 +233,16 @@ audio_excerpt(y_wt, sr_wt, start_sec=0, duration_sec=15)
 
 While waveforms show us *when* things happen, they don't tell us *what* is happening. If an orchestra plays all at once, the waveform is just a single messy line. 
 
-The **Discrete Fourier Transform (DFT)** is the mathematical magic trick that untangles this mess. It decomposes a complex signal into its constituent frequencies. Imagine being able to taste a soup and instantly knowing the exact recipe and quantities of every single ingredient—that is what the Fourier Transform does for sound.
+The **Discrete Fourier Transform (DFT)** is the math trick that untangles this mess. It decomposes a complex signal into its constituent frequencies. Think of shining white light through a glass prism to split it into a rainbow of individual colors. The Fourier Transform does exactly that, but for sound—taking raw noise and splitting it into the pure pitches that make it up.
 
 For a signal $$x[n]$$ of length $$N$$:
 
 $$X[k] = \sum_{n=0}^{N-1} x[n] \cdot e^{-i2\pi kn/N}$$
 
 where:
-- $$k$$ is the frequency bin index (the "ingredient").
+- $$k$$ is the frequency bin index (the "individual color").
 
-- $$X[k]$$ is a complex number whose magnitude $$\lvert X[k] \rvert$$ gives the amplitude at that frequency (how much of the ingredient is present).
+- $$X[k]$$ is a complex number whose magnitude $$\lvert X[k] \rvert$$ gives the amplitude at that frequency (how "bright" that color is).
 
 - The phase $$\angle X[k]$$ gives the phase offset.
 
@@ -290,6 +290,15 @@ output:
 ``` 
 True
 ```
+
+**What exactly did we just compute?**
+The output of both our `dft_naive` function and NumPy's `np.fft.fft` is an array of **complex numbers** (e.g., `1.5 - 2.3j`). 
+
+Each complex number represents a specific frequency "bin." But a complex number by itself isn't very intuitive. To make sense of it, we split it into two understandable parts:
+1. **Magnitude (Amplitude):** By taking the absolute value (`np.abs()`) of the complex number, we get the magnitude. This tells us *how loud* or *how present* that specific frequency is in our audio snippet.
+2. **Phase:** By getting the angle of the complex number (`np.angle()`), we find the phase. This tells us the starting position (or horizontal shift) of that frequency wave in time.
+
+For most audio analysis, including the rest of this post, the most important part is the **Magnitude**.
 
 ## Frequency Spectrum Visualization
 
@@ -343,13 +352,21 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/frequency-spectrum.png" column=1 caption="frequency spectrum viz" %}
 </div>
 
+**How to read these plots:**
+- The horizontal axis is **Frequency (Pitch)**. The left side is low bass, and the right side is high treble.
+- The vertical axis is **Magnitude (Volume)** in decibels (dB). Taller peaks mean that specific pitch is louder.
+
+Notice the stark contrast between the two tracks here:
+- **Sea of Voices** shows a thick, dense wall of sound. The energy is spread out across a wide range of frequencies, which makes sense given the lush, washing, atmospheric synths playing in this section.
+- **Wind Tempos** shows very sharp, distinct, separated spikes (called "harmonics" or "partials"). This is the signature look of a clean instrument like a piano. The tallest spike is the fundamental note being played, and the smaller spikes trailing off to the right are its natural mathematical overtones.
+
 # 5. Spectrograms: Time-Frequency Analysis
 
 The Fourier Transform we just did has a major limitation: it averages the frequencies over the *entire* audio clip. It tells us what frequencies exist, but not *when* they happened. 
 
 To solve this, we use the **Short-Time Fourier Transform (STFT)**. Instead of transforming the whole song at once, we chop the audio into tiny, overlapping slices (windows) and apply the Fourier Transform to each slice. The result is a **Spectrogram**—a 2D map showing time on the horizontal axis and frequency on the vertical axis, with color representing intensity.
 
-**Real-world applications:** Spectrograms are used in voice recognition systems to "read" spoken words as visual patterns. They are also heavily used in medicine (like interpreting ultrasound Dopplers) and biology (like classifying bird calls or whale songs).
+**Real-world applications:** Spectrograms are used in voice recognition systems to "read" spoken words as visual patterns. They are also heavily used in medicine (like interpreting [ultrasound Dopplers](https://en.wikipedia.org/wiki/Ultrasound_doppler)) and biology (like classifying bird calls or whale songs).
 
 For a window function $$w[n]$$ of length $$L$$:
 
@@ -454,6 +471,15 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/spectogram.png" column=1 caption="spectograms comparison" %}
 </div>
 
+**How to read these spectatorgrams:**
+- Time runs from left to right along the horizontal axis.
+- Frequency (Pitch) goes from bottom (low) to top (high) on the vertical axis.
+- Color intensity (brightness) represents the Amplitude (Volume) of that specific frequency at that specific moment in time.
+
+Visualizing audio this way makes the structural differences incredibly obvious:
+- **Sea of Voices** appears as thick, glowing horizontal bands of color. This smear of energy across time represents sustained pads, reverberant synthesizers, and slow attack/release envelopes where the notes wash into each other.
+- **Wind Tempos**, on the other hand, is dominated by sharp, bright vertical lines. These represent "transients"—the sudden, percussive attack of the piano hammers hitting the strings, followed by the immediate decay of the note.
+
 ## Hearing the Spectogram: Key Moments
 
 The spectrogram reveals structure we can now *hear*:
@@ -498,6 +524,10 @@ The "center of mass" of the spectrum — it mathematically indicates the **"brig
 
 $$\text{centroid} = \frac{\sum_k f_k \cdot |X[k]|}{\sum_k |X[k]|}$$
 
+where:
+- $$f_k$$ is the actual frequency in Hz at bin $$k$$.
+- $$\lvert X[k] \rvert$$ is the magnitude (volume) of that frequency. We saw this back in the Fourier Transform section.
+
 ### Spectral Rolloff
 The frequency below which a specified percentage (e.g., 85%) of the spectral energy is contained. Think of it as the "ceiling" of the sound's active frequencies.
 
@@ -505,6 +535,10 @@ The frequency below which a specified percentage (e.g., 85%) of the spectral ene
 How often the signal waveform crosses the zero-axis. This is a rough proxy for **"noisiness"** vs tonal content. A heavily distorted guitar or a snare drum will have a very high zero-crossing rate compared to a clean piano note:
 
 $$\text{ZCR} = \frac{1}{2(N-1)} \sum_{n=1}^{N-1} |\text{sign}(x[n]) - \text{sign}(x[n-1])|$$
+
+where:
+- $$x[n]$$ is the amplitude value of the audio sample at index $$n$$.
+- $$\text{sign}(x[n])$$ checks if the signal is positive or negative. The formula basically just counts how many times the signal flipped from positive to negative.
 
 ``` python
 def spectral_centroid_numpy(S, sr, n_fft=2048):
@@ -626,6 +660,12 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/spectral.png" column=1 caption="spectral features comparison" %}
 </div>
 
+**What do these plots reveal?**
+
+- **Spectral Centroid (Brightness):** Notice how *Wind Tempos* (green) has sudden spikes—every time a piano key is struck forcefully, the sound momentarily gets very bright, then quickly mellows out. *Sea of Voices* (blue) steadily climbs upward as the atmospheric synths slowly open their filters and let more high-frequency energy swell into the mix.
+- **Spectral Rolloff (Ceiling):** This follows a very similar shape to the Centroid, confirming that the "ceiling" of the audio is bouncing up and down with the piano strikes in *Wind Tempos*, but building a solid, rising plateau in *Sea of Voices*.
+- **Zero-Crossing Rate (Noisiness):** *Sea of Voices* maintains a fairly stable, low ZCR because synthesizers produce very clean, periodic tonal waves. *Wind Tempos* jumps around much more wildly, picking up the slightly noisy, percussive impact of the piano hammers hitting the strings.
+
 ## Hearing Spectral Brightness
 
 The spectral centroid (perceived "brightness") shows interesting contrasts. Let's hear moments where each track reaches peak brightness:
@@ -636,7 +676,7 @@ The spectral centroid (perceived "brightness") shows interesting contrasts. Let'
 ``` python
 # Sea of Voices: The euphoric drop section @ ~1:25
 print("🌊 Sea of Voices — First drop / climax (1:25-1:35)")
-print("   Maximum spectral brightness — all those shimmering synth layers!")
+print("   Maximum spectral brightness")
 audio_excerpt(y_sov, sr_sov, start_sec=85, duration_sec=10)
 ```
 
@@ -819,6 +859,12 @@ plt.tight_layout()
 <div style="max-width:1000px; margin:auto;">
   {% include aligner.html images="posts/audio/rhythm.png" column=1 caption="rhythm analysis comparison" %}
 </div>
+
+**How to read these rhythm plots:**
+- **Top Row (Onset Strength):** This shows our "map of hits." Notice how *Sea of Voices* has very dense, regular, and rapid spikes—this is the persistent, driving electronic drum beat pushing the song forward. *Wind Tempos* has sharp spikes too, but they are more scattered and less rigid, tracking the expressive, staggered piano chords.
+- **Bottom Row (Autocorrelation):** This reveals the actual heartbeat of the tracks. We took the top chart, slid a copy of it over itself (the lag), and plotted where the spikes aligned perfectly.
+  - *Sea of Voices* shows massive, razor-sharp peaks at perfectly even intervals. This mathematically proves it has a very strict, quantized electronic beat.
+  - *Wind Tempos* shows wider, softer humps. The peaks still exist (there is a core tempo), but because the piano is played with human emotion and natural timing variations (rubato), the beats don't align with robotic precision.
 
 ## Feeling the Tempo Difference
 
