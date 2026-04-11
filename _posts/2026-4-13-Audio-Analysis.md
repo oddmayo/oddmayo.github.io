@@ -13,8 +13,6 @@ mathjax: true
 
 ---
 
-Work in progress...
-
 In this post I'll explain the fundamentals of audio signal processing from what I've learned about [Music Information Retrieval (MIR)](https://musicinformationretrieval.com/content/1_introduction/why_mir.html). Audio analysis is something I have always wanted to do but never really got around to it. First because it looked hard, and second I've never really come across data in audio format during my data scientist career.
 
 I can't say I 'grew up' listening to Porter Robinson, but it's been a while. First time I heard his music was while playing the first Forza Horizon in Xbox 360 back in 2012 and thought it was pretty cool but didn't think much about it. Later on with the years, I noticed drastic change of styles through the albums, from your typical electro music to more emotional and melodic compositions.
@@ -130,7 +128,7 @@ The opening of "Sea of Voices" is characterized by a lush, evolving pad sound th
 
 # 2. Understanding Digital Audio
 
-Digital audio represents continuous sound waves as discrete samples.
+Digital audio represents continuous sound waves as discrete samples. Think of digital audio like a flipbook animation: instead of capturing a smooth, continuous motion, you take thousands of quick snapshots per second. When played back quickly, it sounds like one continuous wave.
 
 ## Sample Rate (fs)
 
@@ -138,7 +136,7 @@ The **sample rate** determines how many times per second the audio signal is mea
 
 $$f_s \geq 2f_{max}$$
 
-Since human hearing ranges up to ~20 kHz, CD-quality audio uses 44.1 kHz (or 48 kHz for video).
+Since human hearing ranges up to ~20 kHz, CD-quality audio uses 44.1 kHz (or 48 kHz for video). In real-world applications, choosing the right sample rate is about balancing audio quality with file size—this is why phone calls (which only need to capture voice) use a much lower sample rate of 8 kHz, sounding noticeably more "muffled."
 
 ## Amplitude
 
@@ -233,16 +231,22 @@ audio_excerpt(y_wt, sr_wt, start_sec=0, duration_sec=15)
 
 # 4. The Fourier Transform
 
-The **Discrete Fourier Transform (DFT)** decomposes a signal into its constituent frequencies. For a signal $$x[n]$$ of length $$N$$:
+While waveforms show us *when* things happen, they don't tell us *what* is happening. If an orchestra plays all at once, the waveform is just a single messy line. 
+
+The **Discrete Fourier Transform (DFT)** is the mathematical magic trick that untangles this mess. It decomposes a complex signal into its constituent frequencies. Imagine being able to taste a soup and instantly knowing the exact recipe and quantities of every single ingredient—that is what the Fourier Transform does for sound.
+
+For a signal $$x[n]$$ of length $$N$$:
 
 $$X[k] = \sum_{n=0}^{N-1} x[n] \cdot e^{-i2\pi kn/N}$$
 
 where:
-- $$k$$ is the frequency bin index.
+- $$k$$ is the frequency bin index (the "ingredient").
 
-- $$X[k]$$ is a complex number whose magnitude $$\lvert X[k] \rvert$$ gives the amplitude at that frequency.
+- $$X[k]$$ is a complex number whose magnitude $$\lvert X[k] \rvert$$ gives the amplitude at that frequency (how much of the ingredient is present).
 
 - The phase $$\angle X[k]$$ gives the phase offset.
+
+**Real-world applications:** The Fourier Transform is the backbone of modern audio technology. When you use an Equalizer (EQ) on your phone to boost the bass, use noise-cancellation headphones to block out airplane engine hum, or compress an audio file into an MP3, the Fourier Transform is doing the heavy lifting under the hood.
 
 ## Implementing the DFT
 
@@ -341,16 +345,20 @@ plt.tight_layout()
 
 # 5. Spectrograms: Time-Frequency Analysis
 
-The **Short-Time Fourier Transform (STFT)** applies the DFT to overlapping windows of the signal, producing a time-frequency representation.
+The Fourier Transform we just did has a major limitation: it averages the frequencies over the *entire* audio clip. It tells us what frequencies exist, but not *when* they happened. 
+
+To solve this, we use the **Short-Time Fourier Transform (STFT)**. Instead of transforming the whole song at once, we chop the audio into tiny, overlapping slices (windows) and apply the Fourier Transform to each slice. The result is a **Spectrogram**—a 2D map showing time on the horizontal axis and frequency on the vertical axis, with color representing intensity.
+
+**Real-world applications:** Spectrograms are used in voice recognition systems to "read" spoken words as visual patterns. They are also heavily used in medicine (like interpreting ultrasound Dopplers) and biology (like classifying bird calls or whale songs).
 
 For a window function $$w[n]$$ of length $$L$$:
 
 $$X[m, k] = \sum_{n=0}^{L-1} x[n + mH] \cdot w[n] \cdot e^{-i2\pi kn/L}$$
 
 where:
-- $$m$$ is the frame (time) index
-- $$H$$ is the hop length (samples between frames)
-- $$k$$ is the frequency bin
+- $$m$$ is the frame (time) index, showing our position in time.
+- $$H$$ is the hop length (samples we move forward before taking the next slice).
+- $$k$$ is the frequency bin.
 
 ## Implementation from scratch
 
@@ -479,18 +487,22 @@ audio_excerpt(y_wt, sr_wt, start_sec=35, duration_sec=10)
 
 # 6. Spectral Features
 
-Spectral features summarize properties of the frequency content. These are essential for music information retrieval.
+Spectrograms are great for our human eyes to analyze, but for a machine learning algorithm, they contain an overwhelming amount of raw data. To make this data manageable, we need to summarize the spectrogram into distinct, measurable properties called **Spectral Features**.
+
+These features try to mathematically capture what our ears perceive as "texture" or "timbre."
+
+**Real-world applications:** Have you ever wondered how Spotify's recommendation algorithm knows that two songs have the same "vibe"? It calculates these spectral features for every song in its database, clustering tracks with similar brightness or noisiness to generate your "Discover Weekly" playlists.
 
 ### Spectral Centroid
-The "center of mass" of the spectrum — indicates the "brightness" of a sound:
+The "center of mass" of the spectrum — it mathematically indicates the **"brightness"** of a sound. A bass guitar has a low centroid, while a high-hat cymbal has a high centroid:
 
 $$\text{centroid} = \frac{\sum_k f_k \cdot |X[k]|}{\sum_k |X[k]|}$$
 
 ### Spectral Rolloff
-The frequency below which a specified percentage (e.g., 85%) of the spectral energy is contained.
+The frequency below which a specified percentage (e.g., 85%) of the spectral energy is contained. Think of it as the "ceiling" of the sound's active frequencies.
 
 ### Zero-Crossing Rate
-How often the signal crosses zero — rough proxy for "noisiness" vs tonal content:
+How often the signal waveform crosses the zero-axis. This is a rough proxy for **"noisiness"** vs tonal content. A heavily distorted guitar or a snare drum will have a very high zero-crossing rate compared to a clean piano note:
 
 $$\text{ZCR} = \frac{1}{2(N-1)} \sum_{n=1}^{N-1} |\text{sign}(x[n]) - \text{sign}(x[n-1])|$$
 
@@ -647,19 +659,23 @@ audio_excerpt(y_wt, sr_wt, start_sec=120, duration_sec=10)
 
 # 7. Rhythm & Tempo Analysis
 
+We've now mapped out the "color" and "texture" of the sound, but what about the groove? The spectral features tell us virtually nothing about the beat of the song. To understand the rhythm, we need to look for patterns in how energy changes over time.
+
+**Real-world applications:** DJ software tools (like Serato or Rekordbox) use these exact rhythm analysis techniques to automatically detect BPM and beatmatch tracks. Fitness apps use tempo detection to generate workout playlists that perfectly match your running pace.
+
 ### Onset Detection
-**Onsets** are moments where new sound events begin (note attacks, drum hits). We detect them by finding peaks in the **onset strength envelope**, which measures spectral flux:
+**Onsets** are the exact moments where new sound events begin—like a drum hit, a picked guitar string, or a piano key strike. We detect them by finding sudden positive spikes (peaks) in spectral energy across time, forming an **onset strength envelope**:
 
 $$\text{flux}[m] = \sum_k H(|X[m,k]| - |X[m-1,k]|)$$
 
-where $$H(x) = \max(0, x)$$ is half-wave rectification (only increases matter).
+where $$H(x) = \max(0, x)$$ is half-wave rectification (ignoring energy decreases, we only care when new energy is added).
 
 ### Tempo via Autocorrelation
-The tempo can be estimated by finding periodicity in the onset strength envelope using **autocorrelation**:
+Once we have our "map of hits" (the onset envelope), we can estimate the tempo. We do this by sliding the envelope copy over itself and seeing where the peaks align best—a process called **autocorrelation**:
 
 $$R[\tau] = \sum_m o[m] \cdot o[m + \tau]$$
 
-Peaks in $$R[\tau]$$ at lag $$\tau$$ correspond to a period of $$\tau$$ frames, giving tempo:
+Peaks in $$R[\tau]$$ at lag $$\tau$$ correspond to a repeating pattern of length $$\tau$$ frames, giving us the tempo in Beats Per Minute (BPM):
 
 $$\text{BPM} = \frac{60 \cdot f_s}{H \cdot \tau}$$
 
@@ -840,7 +856,11 @@ audio_excerpt(y_wt, sr_wt, start_sec=180, duration_sec=10)
 
 # 8. Chromogram: Harmonic Content
 
-A **chromagram** (or chroma feature) represents the energy distribution across the 12 pitch classes (C, C#, D, ..., B), regardless of octave. This captures harmonic and melodic content.
+Now that we have analyzed the texture and the rhythm, what about the musical notes themselves? If a piano and a synthesizer both play a C major chord, they have different textures but the exact same harmony. 
+
+A **chromagram** (or chroma feature) isolates this harmonic information. It takes the entire frequency spectrum and collapses it into just the 12 core pitch classes of Western music (C, C#, D, ..., B), completely ignoring the octave. A extremely low "C" bass note and a piercingly high "C" synth note are combined into a single "C" bucket.
+
+**Real-world applications:** Apps like Shazam or SoundHound use chroma features combined with other spectral data to identify songs even in noisy environments. Because chromagrams ignore the exact octave and instrument, they are especially powerful for identifying cover songs or generating automatic guitar tabs/chords for a track.
 
 The chroma vector at frame $$m$$ is:
 
@@ -941,19 +961,25 @@ audio_excerpt(y_wt, sr_wt, start_sec=240, duration_sec=12)
 
 # 9. Mel-Frequency Cepstral Coefficients (MFCCs)
 
-MFCCs are a compact representation of the spectral envelope, widely used in speech and music analysis. The pipeline:
+While Chroma tells us *what* musical notes are being played, MFCCs capture *how* they sound. The Mel-Frequency Cepstral Coefficients are essentially the ultimate **timbral fingerprint**. 
 
-1. **Mel spectrogram**: Apply mel-scale filterbank to power spectrum
+The human ear doesn't hear frequencies linearly—we are much better at distinguishing tiny pitch differences in low frequencies (like a bassline) than in high frequencies (like a cymbal crash). The **Mel-scale** is a mathematical formula that warps the frequency spectrum to match how human ears actually hear sound. 
+
+**Real-world applications:** Because MFCCs act as a fingerprint for the unique "shape" or texture of a sound, they are the gold standard for speech recognition. When Siri or Alexa learn to recognize *your specific voice* over someone else's, or when AI is used to detect if an engine sounds faulty or a cough sounds sick, they are almost certainly using MFCCs.
+
+The pipeline:
+
+1. **Mel spectrogram**: Apply a mel-scale filterbank (which spaces filters closer together at low frequencies and further apart at high frequencies) to the power spectrum:
 
    $$S_{mel}[m, b] = \sum_k |X[m,k]|^2 \cdot H_b[k]$$
    
-2. **Log compression**: $$\log(S_{mel} + \epsilon)$$
+2. **Log compression**: Take the log, because humans perceive volume logarithmically: $$\log(S_{mel} + \epsilon)$$
 
-3. **DCT**: Discrete Cosine Transform decorrelates the mel bands
+3. **DCT**: The Discrete Cosine Transform acts as a data-compression step. It decorrelates the overlapping mel bands and extracts the broad shape of the frequency spectrum:
 
    $$c_n = \sum_{b=0}^{B-1} \log(S_{mel}[b]) \cdot \cos\left(\frac{\pi n (b + 0.5)}{B}\right)$$
 
-The first ~13 coefficients capture timbral characteristics.
+Typically, just using the first 13 of these coefficients is enough to comprehensively capture the timbral identity of the audio.
 
 ``` python
 def mel_filterbank_numpy(sr, n_fft, n_mels=128, fmin=0, fmax=None):
@@ -1081,3 +1107,4 @@ audio_excerpt(y_wt, sr_wt, start_sec=300, duration_sec=15)
 </audio>
 
 # Concluding Remarks
+
