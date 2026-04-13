@@ -944,6 +944,7 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/chromagram.png" column=1 caption="chromagram comparison" %}
 </div>
 
+- **Chromagrams:** These show how intense each of the 12 pitch classes is over time. The horizontal axis is time, and the vertical axis lists the musical notes (C to B). Brighter colors mean a note is playing more strongly at that moment. *Sea of Voices* displays sustained, thick horizontal bands indicating long, sweeping chords, while *Wind Tempos* features shorter, distinct blocks reflecting individual piano notes.
 
 ``` python
 # Average chroma distribution — which notes dominate each track?
@@ -971,6 +972,10 @@ plt.tight_layout()
 <div style="max-width:1000px; margin:auto;">
   {% include aligner.html images="posts/audio/average-chroma.png" column=1 caption="average chroma distribution" %}
 </div>
+
+- **Average Chroma Distribution:** This summarizes the entire section, showing which notes are most prominent overall.
+  - *Sea of Voices* (blue) peaks strongly on D, F#, and A, clearly outlining a D Major chord that aligns with its uplifting, bright emotional tone.
+  - *Wind Tempos* (green) has strong peaks on C#, D#, F#, and G#. This heavy emphasis on the "black keys" creates a pentatonic scale feel that gives the track its distinct Japanese-influenced, introspective mood.
 
 ## Hearing the Harmony: Key Center Differences
 
@@ -1090,6 +1095,7 @@ plt.grid(True, alpha=0.3)
   {% include aligner.html images="posts/audio/mel-filterbank.png" column=1 caption="mel filterbank visualization" %}
 </div>
 
+- **Mel Filterbank:** This chart demonstrates how frequencies are grouped to mimic human hearing. Notice that the triangular filters are narrower and clustered together at lower frequencies (left side, where we easily distinguish pitch changes) and stretch out wider at higher frequencies.
 
 ``` python
 # Compare MFCCs between tracks
@@ -1119,6 +1125,12 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/mfcc.png" column=1 caption="mfcc comparison" %}
 </div>
 
+
+- **MFCC Spectrograms:** These matrices map out the "shape" of the sound's timbre over time.
+  - The vertical axis shows the 13 coefficients. The lower coefficients (bottom) capture the broad, overall shape of the spectral envelope (the macro-texture of the sound), while the higher coefficients capture finer, more detailed textures.
+  - The colors indicate the magnitude of each coefficient over time.
+  - Notice the difference in stability: *Sea of Voices* displays smoother, longer-lasting colored blocks due to its lush, continuous synthesizer layers, whereas *Wind Tempos* is more fragmented and rhythmic—a direct reflection of alternating staccato piano notes and ambient spacing.
+
 ## The Climax: Peak Emotional Moments
 
 Every great track builds to something transcendent. These are the moments where all the analysis converges — maximum spectral energy, strongest harmonic content, and most intense rhythmic drive:
@@ -1126,9 +1138,9 @@ Every great track builds to something transcendent. These are the moments where 
 ``` python
 # Sea of Voices: The transcendent climax @ ~3:45
 print("🌊 Sea of Voices — CLIMAX: The Transcendent Drop (3:45-4:00)")
-print("   ✨ Maximum spectral brightness")
-print("   ✨ Full harmonic saturation")  
-print("   ✨ Peak emotional intensity")
+print("    Maximum spectral brightness")
+print("    Full harmonic saturation")  
+print("    Peak emotional intensity")
 print("   This is the moment the spectrogram LIGHTS UP")
 audio_excerpt(y_sov, sr_sov, start_sec=225, duration_sec=15)
 ```
@@ -1141,9 +1153,9 @@ audio_excerpt(y_sov, sr_sov, start_sec=225, duration_sec=15)
 ``` python
 # Wind Tempos: The emotional resolution @ ~5:00
 print("🍃 Wind Tempos — CLIMAX: Emotional Release (5:00-5:15)")
-print("   🌿 Rich lower harmonics")
-print("   🌿 Sustained melodic resolution")
-print("   🌿 The satisfying conclusion the MFCC patterns predicted")
+print("    Rich lower harmonics")
+print("    Sustained melodic resolution")
+print("    The satisfying conclusion the MFCC patterns predicted")
 audio_excerpt(y_wt, sr_wt, start_sec=300, duration_sec=15)
 ```
 
@@ -1154,3 +1166,4 @@ audio_excerpt(y_wt, sr_wt, start_sec=300, duration_sec=15)
 
 # Concluding Remarks
 
+If you read through this bible of a post, well, great for you. I hope you learned something new. I certainly had fun trying to get my head around the maths, music theory and new concepts. The great thing about data science is that there's so much you can learn.  In any case, if you are no that into sharpening your python skills, just use the existing libraries and save yourself some time.
