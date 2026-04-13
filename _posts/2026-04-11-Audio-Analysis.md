@@ -46,6 +46,7 @@ You can download the code from this post here: [oddmayo/audio-analysis](https://
 
 
 **requirements:** \
+`librosa==0.11.0`
 
 # 1. Setup and Loading
 
@@ -103,7 +104,7 @@ Before diving into analysis, let's hear how each track opens. Notice the contras
 
 ``` python
 # Sea of Voices: Opening 10 seconds — ethereal pad entrance
-print("🌊 Sea of Voices — Opening atmosphere (0:00-0:10)")
+print("Sea of Voices — Opening atmosphere (0:00-0:10)")
 audio_excerpt(y_sov, sr_sov, start_sec=0, duration_sec=10)
 ```
 
@@ -115,7 +116,7 @@ audio_excerpt(y_sov, sr_sov, start_sec=0, duration_sec=10)
 
 ``` python
 # Wind Tempos: First piano entrance
-print("🍃 Wind Tempos — First piano notes (0:05-0:15)")
+print("Wind Tempos — First piano notes (0:05-0:15)")
 audio_excerpt(y_wt, sr_wt, start_sec=5, duration_sec=10)
 ```
 
@@ -123,7 +124,7 @@ audio_excerpt(y_wt, sr_wt, start_sec=5, duration_sec=10)
   <source src="/assets/audio/porter-robinson/wind-opening.wav" type="audio/wav">
   Your browser does not support the audio element.
 </audio>
-
+\
 The opening of "Sea of Voices" is characterized by a lush, evolving pad sound that creates an immersive atmosphere, while "Wind Tempos" introduces a more immediate and melodic piano motif that sets a different emotional tone.
 
 # 2. Understanding Digital Audio
@@ -252,6 +253,10 @@ where:
 
 Below we implement the DFT using pure NumPy, then compare to the Fast Fourier Transform (FFT).
 
+<details markdown="1">
+
+<summary>Click to see code</summary>
+
 ``` python
 def dft_naive(x):
     """
@@ -284,6 +289,9 @@ fft_result = np.fft.fft(test_segment)
 # Verify they match
 np.allclose(dft_result, fft_result)
 ```
+
+</details>
+
 
 output:
 
@@ -352,7 +360,6 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/frequency-spectrum.png" column=1 caption="frequency spectrum viz" %}
 </div>
 
-**How to read these plots:**
 - The horizontal axis is **Frequency (Pitch)**. The left side is low bass, and the right side is high treble.
 - The vertical axis is **Magnitude (Volume)** in decibels (dB). Taller peaks mean that specific pitch is louder.
 
@@ -378,6 +385,10 @@ where:
 - $$k$$ is the frequency bin.
 
 ## Implementation from scratch
+
+<details markdown="1">
+
+<summary>Click to see code</summary>
 
 ``` python
 def stft_numpy(x, n_fft=2048, hop_length=512, window='hann'):
@@ -428,6 +439,7 @@ S_librosa = librosa.stft(test_seg, n_fft=2048, hop_length=512)
 correlation = np.corrcoef(np.abs(S_ours).flatten(), np.abs(S_librosa).flatten())[0, 1]
 f"Correlation with librosa STFT: {correlation:.6f}"
 ```
+</details>
 
 output:
 
@@ -471,12 +483,11 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/spectogram.png" column=1 caption="spectograms comparison" %}
 </div>
 
-**How to read these spectatorgrams:**
 - Time runs from left to right along the horizontal axis.
 - Frequency (Pitch) goes from bottom (low) to top (high) on the vertical axis.
 - Color intensity (brightness) represents the Amplitude (Volume) of that specific frequency at that specific moment in time.
 
-Visualizing audio this way makes the structural differences incredibly obvious:
+Visualizing audio this way makes the structural differences easier to spot:
 - **Sea of Voices** appears as thick, glowing horizontal bands of color. This smear of energy across time represents sustained pads, reverberant synthesizers, and slow attack/release envelopes where the notes wash into each other.
 - **Wind Tempos**, on the other hand, is dominated by sharp, bright vertical lines. These represent "transients"—the sudden, percussive attack of the piano hammers hitting the strings, followed by the immediate decay of the note.
 
@@ -488,8 +499,8 @@ The spectrogram reveals structure we can now *hear*:
 
 ``` python
 # Sea of Voices: Dense harmonic section @ 0:25-0:35
-print("🌊 Sea of Voices — Harmonic buildup (0:25-0:35)")
-print("   Listen for the layered synth textures creating those bright spectral bands")
+print("Sea of Voices — Harmonic buildup (0:25-0:35)")
+print("Listen for the layered synth textures creating those bright spectral bands")
 audio_excerpt(y_sov, sr_sov, start_sec=25, duration_sec=10)
 ```
 
@@ -501,8 +512,8 @@ audio_excerpt(y_sov, sr_sov, start_sec=25, duration_sec=10)
 
 ``` python
 # Wind Tempos: Piano transients section @ 0:35-0:45
-print("🍃 Wind Tempos — Piano transients (0:35-0:45)")
-print("   Notice the sharp attacks — these create the vertical lines in the spectrogram")
+print("Wind Tempos — Piano transients (0:35-0:45)")
+print("Notice the sharp attacks — these create the vertical lines in the spectrogram")
 audio_excerpt(y_wt, sr_wt, start_sec=35, duration_sec=10)
 ```
 
@@ -539,6 +550,10 @@ $$\text{ZCR} = \frac{1}{2(N-1)} \sum_{n=1}^{N-1} |\text{sign}(x[n]) - \text{sign
 where:
 - $$x[n]$$ is the amplitude value of the audio sample at index $$n$$.
 - $$\text{sign}(x[n])$$ checks if the signal is positive or negative. The formula basically just counts how many times the signal flipped from positive to negative.
+
+<details markdown="1">
+
+<summary>Click to see code</summary>
 
 ``` python
 def spectral_centroid_numpy(S, sr, n_fft=2048):
@@ -593,6 +608,8 @@ zcr_librosa = librosa.feature.zero_crossing_rate(y_sov[:5*sr_sov], frame_length=
     "zcr_correlation": np.corrcoef(zcr_ours[:len(zcr_librosa)], zcr_librosa)[0, 1]
 }
 ```
+
+</details>
 
 output:
 
@@ -660,8 +677,6 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/spectral.png" column=1 caption="spectral features comparison" %}
 </div>
 
-**What do these plots reveal?**
-
 - **Spectral Centroid (Brightness):** Notice how *Wind Tempos* (green) has sudden spikes—every time a piano key is struck forcefully, the sound momentarily gets very bright, then quickly mellows out. *Sea of Voices* (blue) steadily climbs upward as the atmospheric synths slowly open their filters and let more high-frequency energy swell into the mix.
 - **Spectral Rolloff (Ceiling):** This follows a very similar shape to the Centroid, confirming that the "ceiling" of the audio is bouncing up and down with the piano strikes in *Wind Tempos*, but building a solid, rising plateau in *Sea of Voices*.
 - **Zero-Crossing Rate (Noisiness):** *Sea of Voices* maintains a fairly stable, low ZCR because synthesizers produce very clean, periodic tonal waves. *Wind Tempos* jumps around much more wildly, picking up the slightly noisy, percussive impact of the piano hammers hitting the strings.
@@ -721,6 +736,10 @@ $$\text{BPM} = \frac{60 \cdot f_s}{H \cdot \tau}$$
 
 where $$H$$ is the hop length.
 
+<details markdown="1">
+
+<summary>Click to see code</summary>
+
 ``` python
 def onset_strength_numpy(S, sr, hop_length=512):
     """
@@ -772,12 +791,15 @@ onset_librosa = librosa.onset.onset_strength(y=y_sov[:30*sr_sov], sr=sr_sov)
 f"Onset strength correlation: {np.corrcoef(onset_ours, onset_librosa[1:])[0,1]:.4f}"
 ```
 
+</details>
+
 output:
 
 ```
 'Onset strength correlation: -0.0164'
 ```
 
+Using librosa:
 
 ``` python
 # Tempo estimation and beat tracking comparison
@@ -809,6 +831,8 @@ output:
 {'Sea of Voices': {'tempo_bpm': 129.19921875, 'total_beats': 604},
  'Wind Tempos': {'tempo_bpm': 92.28515625, 'total_beats': 562}}
 ```
+
+Plot it:
 
 ``` python
 # Visualize onset strength and autocorrelation side by side
@@ -860,7 +884,7 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/rhythm.png" column=1 caption="rhythm analysis comparison" %}
 </div>
 
-**How to read these rhythm plots:**
+
 - **Top Row (Onset Strength):** This shows our "map of hits." Notice how *Sea of Voices* has very dense, regular, and rapid spikes—this is the persistent, driving electronic drum beat pushing the song forward. *Wind Tempos* has sharp spikes too, but they are more scattered and less rigid, tracking the expressive, staggered piano chords.
 - **Bottom Row (Autocorrelation):** This reveals the actual heartbeat of the tracks. We took the top chart, slid a copy of it over itself (the lag), and plotted where the spikes aligned perfectly.
   - *Sea of Voices* shows massive, razor-sharp peaks at perfectly even intervals. This mathematically proves it has a very strict, quantized electronic beat.
@@ -876,8 +900,8 @@ Listen to sections where the beat is most prominent:
 
 ``` python
 # Sea of Voices: The driving beat section @ ~2:00
-print("🌊 Sea of Voices — Driving beat at 129 BPM (2:00-2:10)")
-print("   Feel the four-on-the-floor kick pattern")
+print("Sea of Voices — Driving beat at 129 BPM (2:00-2:10)")
+print("Feel the four-on-the-floor kick pattern")
 audio_excerpt(y_sov, sr_sov, start_sec=120, duration_sec=10)
 ```
 
@@ -889,8 +913,8 @@ audio_excerpt(y_sov, sr_sov, start_sec=120, duration_sec=10)
 
 ``` python
 # Wind Tempos: Slower, organic rhythm @ ~3:00
-print("🍃 Wind Tempos — Organic pulse at 92 BPM (3:00-3:10)")
-print("   More flexible, breathing rhythm with natural timing variations")
+print("Wind Tempos — Organic pulse at 92 BPM (3:00-3:10)")
+print("More flexible, breathing rhythm with natural timing variations")
 audio_excerpt(y_wt, sr_wt, start_sec=180, duration_sec=10)
 ```
 
@@ -916,7 +940,7 @@ where $$\text{bins}(p)$$ are the frequency bins corresponding to pitch class $$p
 
 ### Musical Context
 - **Sea of Voices**: Built around lush major chords with emotional progressions.
-- **Wind Tempos**: More modal, with hints of Japanese pentatonic influence.
+- **Wind Tempos**: More modal, with hints of [Japanese pentatonic influence](https://en.wikipedia.org/wiki/Pentatonic_scale#Japanese_pentatonic_scales).
 
 ``` python
 # Compute and visualize chromagrams
@@ -944,7 +968,7 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/chromagram.png" column=1 caption="chromagram comparison" %}
 </div>
 
-- **Chromagrams:** These show how intense each of the 12 pitch classes is over time. The horizontal axis is time, and the vertical axis lists the musical notes (C to B). Brighter colors mean a note is playing more strongly at that moment. *Sea of Voices* displays sustained, thick horizontal bands indicating long, sweeping chords, while *Wind Tempos* features shorter, distinct blocks reflecting individual piano notes.
+These show how intense each of the 12 pitch classes is over time. The horizontal axis is time, and the vertical axis lists the musical notes (C to B). Brighter colors mean a note is playing more strongly at that moment. *Sea of Voices* displays sustained, thick horizontal bands indicating long, sweeping chords, while *Wind Tempos* features shorter, distinct blocks reflecting individual piano notes.
 
 ``` python
 # Average chroma distribution — which notes dominate each track?
@@ -973,7 +997,7 @@ plt.tight_layout()
   {% include aligner.html images="posts/audio/average-chroma.png" column=1 caption="average chroma distribution" %}
 </div>
 
-- **Average Chroma Distribution:** This summarizes the entire section, showing which notes are most prominent overall.
+This summarizes the entire section, showing which notes are most prominent overall.
   - *Sea of Voices* (blue) peaks strongly on D, F#, and A, clearly outlining a D Major chord that aligns with its uplifting, bright emotional tone.
   - *Wind Tempos* (green) has strong peaks on C#, D#, F#, and G#. This heavy emphasis on the "black keys" creates a pentatonic scale feel that gives the track its distinct Japanese-influenced, introspective mood.
 
@@ -987,8 +1011,8 @@ Listen to passages where the harmonic character shines through:
 
 ``` python
 # Sea of Voices: The soaring chord progression @ ~3:00
-print("🌊 Sea of Voices — Soaring harmonies in D/G major (3:00-3:12)")
-print("   Listen for the uplifting, anthemic chord movement")
+print("Sea of Voices — Soaring harmonies in D/G major (3:00-3:12)")
+print("Listen for the uplifting, anthemic chord movement")
 audio_excerpt(y_sov, sr_sov, start_sec=180, duration_sec=12)
 ```
 
@@ -999,8 +1023,8 @@ audio_excerpt(y_sov, sr_sov, start_sec=180, duration_sec=12)
 
 ``` python
 # Wind Tempos: Melancholic harmonic passage @ ~4:00
-print("🍃 Wind Tempos — Melancholic piano in C#/G# minor (4:00-4:12)")
-print("   Notice the more introspective, bittersweet quality")
+print("Wind Tempos — Melancholic piano in C#/G# minor (4:00-4:12)")
+print("Notice the more introspective, bittersweet quality")
 audio_excerpt(y_wt, sr_wt, start_sec=240, duration_sec=12)
 ```
 
@@ -1012,7 +1036,7 @@ audio_excerpt(y_wt, sr_wt, start_sec=240, duration_sec=12)
 
 # 9. Mel-Frequency Cepstral Coefficients (MFCCs)
 
-While Chroma tells us *what* musical notes are being played, MFCCs capture *how* they sound. The Mel-Frequency Cepstral Coefficients are essentially the ultimate **timbral fingerprint**. 
+To sum things up, while Chroma tells us *what* musical notes are being played, MFCCs capture *how* they sound. The Mel-Frequency Cepstral Coefficients are essentially the ultimate **timbral fingerprint**. 
 
 The human ear doesn't hear frequencies linearly—we are much better at distinguishing tiny pitch differences in low frequencies (like a bassline) than in high frequencies (like a cymbal crash). The **Mel-scale** is a mathematical formula that warps the frequency spectrum to match how human ears actually hear sound. 
 
@@ -1031,6 +1055,10 @@ The pipeline:
    $$c_n = \sum_{b=0}^{B-1} \log(S_{mel}[b]) \cdot \cos\left(\frac{\pi n (b + 0.5)}{B}\right)$$
 
 Typically, just using the first 13 of these coefficients is enough to comprehensively capture the timbral identity of the audio.
+
+<details markdown="1">
+
+<summary>Click to see code</summary>
 
 ``` python
 def mel_filterbank_numpy(sr, n_fft, n_mels=128, fmin=0, fmax=None):
@@ -1091,11 +1119,13 @@ plt.xlim(0, 8000)
 plt.grid(True, alpha=0.3)
 ```
 
+</details>
+
 <div style="max-width:1000px; margin:auto;">
   {% include aligner.html images="posts/audio/mel-filterbank.png" column=1 caption="mel filterbank visualization" %}
 </div>
 
-- **Mel Filterbank:** This chart demonstrates how frequencies are grouped to mimic human hearing. Notice that the triangular filters are narrower and clustered together at lower frequencies (left side, where we easily distinguish pitch changes) and stretch out wider at higher frequencies.
+This chart demonstrates how frequencies are grouped to mimic human hearing. Notice that the triangular filters are narrower and clustered together at lower frequencies (left side, where we easily distinguish pitch changes) and stretch out wider at higher frequencies.
 
 ``` python
 # Compare MFCCs between tracks
@@ -1126,10 +1156,10 @@ plt.tight_layout()
 </div>
 
 
-- **MFCC Spectrograms:** These matrices map out the "shape" of the sound's timbre over time.
+These matrices map out the "shape" of the sound's timbre over time.
   - The vertical axis shows the 13 coefficients. The lower coefficients (bottom) capture the broad, overall shape of the spectral envelope (the macro-texture of the sound), while the higher coefficients capture finer, more detailed textures.
   - The colors indicate the magnitude of each coefficient over time.
-  - Notice the difference in stability: *Sea of Voices* displays smoother, longer-lasting colored blocks due to its lush, continuous synthesizer layers, whereas *Wind Tempos* is more fragmented and rhythmic—a direct reflection of alternating staccato piano notes and ambient spacing.
+  - Notice the difference in stability: *Sea of Voices* displays smoother, longer-lasting colored blocks due to its lush, continuous synthesizer layers, whereas *Wind Tempos* is more fragmented and rhythmic—a direct reflection of alternating [staccato piano notes](https://www.londonpianoinstitute.co.uk/legato-staccato-portamento-piano/) and ambient spacing.
 
 ## The Climax: Peak Emotional Moments
 
@@ -1141,7 +1171,7 @@ print("🌊 Sea of Voices — CLIMAX: The Transcendent Drop (3:45-4:00)")
 print("    Maximum spectral brightness")
 print("    Full harmonic saturation")  
 print("    Peak emotional intensity")
-print("   This is the moment the spectrogram LIGHTS UP")
+print("    This is the moment the spectrogram LIGHTS UP")
 audio_excerpt(y_sov, sr_sov, start_sec=225, duration_sec=15)
 ```
 
