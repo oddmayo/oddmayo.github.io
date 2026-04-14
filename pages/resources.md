@@ -10,9 +10,11 @@ tags: [Page]
 
 I put here pretty much anything that I like or is widely recommended. I'm a fan of book learning.
 
-# Mathematics
 
-**Books**
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">Mathematics</summary>
+
+**BOOKS**
 - [Algebra: Chapter 0 - Aluffi](https://toc.library.ethz.ch/objects/pdf/e01_978-0-8218-4781-7_01.pdf)
 - [Calculus - Apostol](https://simeioseismathimatikwn.wordpress.com/wp-content/uploads/2013/03/apostol-calculusi.pdf)
 - [Linear Algebra - Friedberg, Insel, Spence](https://anandinstitute.org/pdf/lenearal.pdf)
@@ -23,16 +25,19 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 - [Numerical Optimization - Nocedal and Wright](https://www.ime.unicamp.br/~pulino/MT404/TextosOnline/NocedalJ.pdf)
 - [Mathematics for Machine Learning - Deisenroth, Faisal, Ong](https://course.ccs.neu.edu/ds4420sp20/readings/mml-book.pdf)
 
-**Courses**
+**COURSES**
 - [Linear Algebra for Machine Learning and Data Science - Coursera](https://www.coursera.org/learn/machine-learning-linear-algebra)
 - [Calculus for Machine Learning and Data Science - Coursera](https://www.coursera.org/learn/machine-learning-calculus)
 - [Basic Math - Khan Academy](https://www.khanacademy.org/math/get-ready-for-ap-calc)
 - [College Math - Freecodecamp](https://www.youtube.com/watch?v=i7vOAcUo5iA&list=PLWKjhJtqVAbl5SlE6aBHzUVZ1e6q1Wz0v&index=1)
 - [3Blue1Brown - Courses](https://www.youtube.com/playlist?list=PLZHQObOWmAkY7FuaknP8p7ba9-ZV4t01a)
 
-# Probability and Statistics
+</details>
 
-**Books**
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">Probability and Statistics</summary>
+
+**BOOKS**
 
 - [Introduction to Probability Models - Ross](https://www.kwcsangli.in/uploads/4--introduction-to-probability-model-s.ross-math-cs.blog_.ir_.pdf)
 - [Mathematical Statistics with Applications - Wackerly (Spanish)](https://www.cimat.mx/ciencia_para_jovenes/bachillerato/libros/[Wackerly,Mendenhall,Scheaffer]Estadistica_Matematica_con_Aplicaciones.pdf)
@@ -43,22 +48,28 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 
 - [Statistical Rethinking - McElreath (Bayesian)](https://oceanrep.geomar.de/id/eprint/55819/1/Statistical%20Rethinking%202nd%20Edition.pdf)
 
-**Courses**
+**COURSES**
 - [Probability & Statistics for Machine Learning & Data Science (Coursera)](https://www.coursera.org/learn/machine-learning-probability-and-statistics)
 - [Statistics 110 - Harvard](https://www.youtube.com/playlist?list=PL2SOU6wwxB0uwwH80KTQ6ht66KWxbzTIo)
 - [Probabilistic Systems Analysis and Applied Probability - MIT](https://ocw.mit.edu/courses/6-041-probabilistic-systems-analysis-and-applied-probability-fall-2010/pages/readings/)
 
-# Programming
+</details>
+
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">Programming</summary>
 
 - [Clean Code - Martin](https://ptgmedia.pearsoncmg.com/images/9780132928472/samplepages/0132928477.pdf)
 - [The Pragmatic Programmer - Hunt, Thomas](https://ptgmedia.pearsoncmg.com/images/9780201616224/samplepages/020161622X.pdf)
 - [ProgrammingBooks.dev - Curated list organized by difficulty](https://www.programmingbooks.dev/)
 
-# AI
+</details>
+
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">AI</summary>
 
 ## Data Science
 
-**Books**
+**BOOKS**
 
 - [Python Data Science Handbook - VanderPlas](https://jakevdp.github.io/PythonDataScienceHandbook/)
 - [Python for Data Analysis - Wes McKinney](https://www.simmc.org/webweb.ams3.cdn.digitaloceanspaces.com/data/simmcdev.webweb.ai.in/MCAdigitalbook/PYTHON-20240629T072453Z-001/Python%20for%20Data%20Analysis_%20Data%20Wrangling%20with%20Pandas%2C%20NumPy%2C%20and%20IPython%20(%20PDFDrive%20).pdf)
@@ -69,7 +80,7 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 - [Mining of Massive Datasets - Leskovec, Rajaraman, Ullman](http://infolab.stanford.edu/~ullman/mmds/book.pdf)
 - [The Big Book of R - Baruffa](https://www.bigbookofr.com/)
 
-**Courses**
+**COURSES**
 
 - [Data Science - DataCamp (Paid but worth)](https://www.datacamp.com/)
 - [Freecodecamp - Python](https://www.youtube.com/watch?v=eWRfhZUzrAc&list=PLWKjhJtqVAbnqBxcdjVGgT3uVR10bzTEB)
@@ -78,25 +89,25 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 
 ## Data Visualization
 
-**Books**
+**BOOKS**
 
 - [Storytelling with Data - Cole Nussbaumer Knaflic](https://github.com/peyman886/Data_Visualization/blob/main/Cole%20Nussbaumer%20Knaflic%20-%20Storytelling%20with%20Data_%20A%20Data%20Visualization%20Guide%20for%20Business%20Professionals%20(2016_2015%2C%20John%20Wiley%20%26%20Sons)%20-%20libgen.li.pdf)
 - [Data Visualisation - Kirk](https://us2.sagepub.com/sites/default/files/upm-binaries/75674_Kirk_Data_Visualisation.pdf)
 - [ggplot2: Elegant Graphics for Data Analysis - Wickham](https://ggplot2-book.org/)
 
-**Courses**
+**COURSES**
 
 - [Data Visualization - John Guerra](https://johnguerra.co/classes/data_visualization_fall_2024/)
 - [The Pocket Guide to Data Visualization - MLPocket](https://mlpocket.com/dataviz)
 
 ## Forecasting
 
-**Books**
+**BOOKS**
 
 - [Forecasting: Principles and Practice - Hyndman, Athanasopoulos](https://otexts.com/fpp3/)
 - [Elements of Forecasting - Diebold](https://scispace.com/pdf/elements-of-forecasting-3875i2acmq.pdf)
 
-**Courses**
+**COURSES**
 
 - [Time Series Analysis - Kevin Kotze](https://www.kevinkotze.org/time-series-analysis)
 - [Time Series Forecasting - Akshay Bahadur](https://www.youtube.com/watch?v=kAI67Sz92-s&list=PL98nY_tJQXZmT9ZB59T0lsx0ZzzLrYdX4)
@@ -105,7 +116,7 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 
 ## Machine/Statistical Learning
 
-**Books**
+**BOOKS**
 
 - [Pattern Recognition and Machine Learning - Bishop](https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf)
 - [Applied Predictive Modeling - Kuhn, Johnson](https://vuquangnguyen2016.wordpress.com/wp-content/uploads/2018/03/applied-predictive-modeling-max-kuhn-kjell-johnson_1518.pdf)
@@ -114,7 +125,7 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 - [Hands-On Machine Learning with Scikit-Learn, Keras, and TensorFlow - Géron](http://14.139.161.31/OddSem-0822-1122/Hands-On_Machine_Learning_with_Scikit-Learn-Keras-and-TensorFlow-2nd-Edition-Aurelien-Geron.pdf)
 - [Patterns, Predictions, and Actions - Hardt and Recht](https://mlstory.org/)
 
-**Courses**
+**COURSES**
 
 - [Machine Learning - mldl.study](https://www.mldl.study/machinelearning)
 - [Machine Learning Specialization - Deeplearning.ai (Coursera)](https://www.coursera.org/specializations/machine-learning-introduction)
@@ -122,7 +133,7 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 
 ## Deep Learning
 
-**Books**
+**BOOKS**
 
 - [Dive into Deep Learning - Zhang, et al.](https://d2l.ai/)
 - [Deep Learning - Goodfellow, Bengio, Courville](https://www.deeplearningbook.org/)
@@ -130,7 +141,7 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 - [Information Theory, Inference and Learning Algorithms - MacKay](https://www.inference.org.uk/itprnn/book.pdf)
 - [Probabilistic Graphical Models - Koller and Friedman](http://mcb111.org/w06/KollerFriedman.pdf)
 
-**Courses**
+**COURSES**
 
 - [Deep Learning Specialization - Deeplearning.ai (Coursera)](https://www.coursera.org/specializations/deep-learning#courses)
 - [Deep Learning - mldl.study](https://www.mldl.study/deeplearning)
@@ -138,7 +149,7 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 
 ## NLP, LLMs and GenAI
 
-**Books**
+**BOOKS**
 
 - [Speech and Language Processing - Jurafsky and Martin](https://web.stanford.edu/~jurafsky/slp3/ed3book_jan26.pdf)
 - [Tidy Text Mining with R - Silge, Robinson](https://www.tidytextmining.com/)
@@ -147,7 +158,7 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 
 - [LLM, GenAI and other books](https://drive.google.com/drive/folders/1jIJMyBOeWiVxLCUUtLvEFEFCnWxbh6cs)
 
-**Courses**
+**COURSES**
 
 - [Natural Language Processing Specialization - Deeplearning.ai (Coursera)](https://www.coursera.org/specializations/natural-language-processing)
 - [LLM University - Cohere](https://cohere.com/llmu)
@@ -155,26 +166,40 @@ I put here pretty much anything that I like or is widely recommended. I'm a fan 
 - [Hugging Face Learn](https://huggingface.co/learn)
 - [Building LLMs from scratch - Vizuara](https://www.youtube.com/playlist?list=PLPTV0NXA_ZSgsLAr8YCgCwhPIJNNtexWu)
 
+</details>
 
-# Papers
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">Papers</summary>
 
 - [Trending Papers](https://huggingface.co/papers/trending)
 
 Work in progress...
 
-# GitHub Repos
+</details>
+
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">GitHub Repos</summary>
 
 Work in progress...
 
-# MLOps
+</details>
+
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">MLOps</summary>
 
 Work in progress...
 
-# Cloud
+</details>
+
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">Cloud</summary>
 
 Work in progress...
 
-# The Data Science Citizen
+</details>
+
+<details markdown="1" style="margin-bottom: 20px; border: 1px solid var(--border-color, #e1e4e8); border-radius: 8px; padding: 15px; background: var(--bg-color, transparent);">
+<summary style="font-size: 1.5em; font-weight: bold; cursor: pointer;">The Data Science Citizen</summary>
 
 Non academic must reads.
 
@@ -186,3 +211,5 @@ Non academic must reads.
 - [The Art of Statistics: Learning from Data - David Spiegelhalter](https://github.com/LTS-tech-community/data-science-resources/blob/main/pdfcoffee.com_david-spiegelhalter-learning-from-data-the-art-of-statistics-pelican-2019-pdf-free.pdf)
 - [How to Lie with Statistics - Darrell Huff](https://mronline.org/wp-content/uploads/2019/05/HowToLieWithStatistics.pdf)
 - [The Master Algorithm - Pedro Domingos](https://ebooks.karbust.me/Technology/The%20Master%20Algorithm_%20How%20the%20Quest%20for%20the%20Ultimate%20Learning%20Machine%20Will%20Remake%20Our%20World%20-%20Pedro%20Domingos%20-%20Basic%20Books%20(2015).pdf)
+
+</details>
